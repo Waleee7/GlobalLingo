@@ -1,4 +1,4 @@
-        / ==========================================
+        // ==========================================
         // ANIMATED BACKGROUND SYSTEM
         // ==========================================
         const bgCanvas = document.getElementById('background-canvas');
@@ -970,4 +970,5 @@
         window.addEventListener('load', () => {
             loadGameState();
         });
+
 
