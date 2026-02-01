@@ -1,0 +1,718 @@
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        #earth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: none;
+        }
+
+        #earth-container.active {
+            display: block;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Animated Background Elements */
+        .grass-layer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to bottom, rgba(34, 139, 34, 0.3), rgba(34, 139, 34, 0.8));
+            z-index: -1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            animation: float-cloud linear infinite;
+        }
+
+        @keyframes float-cloud {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        .bird {
+            position: absolute;
+            font-size: 1.5em;
+            animation: fly-bird linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes fly-bird {
+            from { transform: translateX(-100px) translateY(0px); }
+            to { transform: translateX(calc(100vw + 100px)) translateY(-50px); }
+        }
+
+        /* Startup Screen */
+        .startup-screen {
+            text-align: center;
+            color: #fff;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 4px solid #00ff88;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            max-width: 600px;
+        }
+
+        .startup-screen h1 {
+            font-size: 2.5em;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #00ff88, 0 0 30px #00ff88; }
+            50% { text-shadow: 0 0 30px #00ff88, 0 0 40px #00ff88, 0 0 50px #00ff88; }
+        }
+
+        .startup-screen .tagline {
+            font-size: 0.7em;
+            color: #00ccff;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .startup-screen .greeting {
+            font-size: 0.9em;
+            margin: 30px 0;
+            color: #fff;
+        }
+
+        .pixel-button {
+            background: linear-gradient(145deg, #00ff88, #00cc66);
+            border: 3px solid #fff;
+            color: #000;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .pixel-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
+        }
+
+        .pixel-button:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            margin: 20px 0;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 30px;
+            border: 3px solid #00ff88;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Profile Setup */
+        .profile-setup {
+            background: rgba(0, 0, 0, 0.9);
+            border: 4px solid #00ff88;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            color: #fff;
+        }
+
+        .profile-setup h2 {
+            color: #00ff88;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin: 25px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #00ccff;
+            font-size: 0.7em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #555;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .avatar-option:hover {
+            border-color: #00ff88;
+            transform: scale(1.1);
+        }
+
+        .avatar-option.selected {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        .avatar-option.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .avatar-option.locked::after {
+            content: '🔒';
+            position: absolute;
+            font-size: 0.5em;
+            bottom: 2px;
+            right: 2px;
+        }
+
+        /* Main App */
+        .main-app {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            background: rgba(0, 0, 0, 0.85);
+            border: 4px solid #00ff88;
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(0, 20, 10, 0.95);
+            border-right: 3px solid #00ff88;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .profile-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .profile-avatar {
+            font-size: 4em;
+            margin: 10px 0;
+        }
+
+        .profile-name {
+            color: #00ff88;
+            font-size: 0.8em;
+            margin: 10px 0;
+            word-break: break-word;
+        }
+
+        .xp-section {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 15px;
+            border: 2px solid #00ff88;
+            margin: 10px 0;
+        }
+
+        .xp-label {
+            color: #00ccff;
+            font-size: 0.6em;
+            margin-bottom: 10px;
+        }
+
+        .xp-value {
+            color: #00ff88;
+            font-size: 1.2em;
+        }
+
+        .streak-section {
+            background: rgba(255, 136, 0, 0.1);
+            padding: 15px;
+            border: 2px solid #ff8800;
+            margin: 10px 0;
+        }
+
+        .streak-label {
+            color: #ffaa00;
+            font-size: 0.6em;
+        }
+
+        .streak-value {
+            color: #ff8800;
+            font-size: 1.2em;
+        }
+
+        .badges-section {
+            margin: 20px 0;
+        }
+
+        .badges-title {
+            color: #00ff88;
+            font-size: 0.7em;
+            margin-bottom: 15px;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .badge {
+            font-size: 2em;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            text-align: center;
+            position: relative;
+        }
+
+        .badge.locked {
+            opacity: 0.3;
+        }
+
+        .badge-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 0.4em;
+            white-space: nowrap;
+            border: 1px solid #00ff88;
+            display: none;
+            z-index: 10;
+        }
+
+        .badge:hover .badge-tooltip {
+            display: block;
+        }
+
+        .settings-button {
+            width: 100%;
+            margin-top: 20px;
+            background: rgba(0, 136, 255, 0.2);
+            border: 2px solid #0088ff;
+            color: #00ccff;
+            padding: 12px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6em;
+            cursor: pointer;
+        }
+
+        .settings-button:hover {
+            background: rgba(0, 136, 255, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .app-title {
+            font-size: 2em;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .daily-goal {
+            font-size: 0.6em;
+            color: #00ccff;
+            margin-top: 10px;
+        }
+
+        .translation-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .translation-box {
+            background: rgba(0, 255, 136, 0.05);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .box-title {
+            color: #00ff88;
+            font-size: 0.7em;
+        }
+
+        .language-select {
+            background: rgba(0, 20, 10, 0.95);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6em;
+            cursor: pointer;
+        }
+
+        .language-select option {
+            background: rgba(0, 20, 10, 0.98);
+            color: #00ff88;
+            padding: 8px;
+        }
+
+        .language-select option:hover {
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .text-area {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff88;
+            color: #fff;
+            padding: 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            resize: vertical;
+        }
+
+        .globe-button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .globe-button {
+            font-size: 5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px #00ff88);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .globe-button:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 30px #00ff88);
+        }
+
+        .globe-button.spinning {
+            animation: fastSpin 1.2s ease-in-out;
+        }
+
+        @keyframes fastSpin {
+            from { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(1.3); }
+            to { transform: rotate(720deg) scale(1); }
+        }
+
+        .translate-prompt {
+            text-align: center;
+            color: #00ff88;
+            font-size: 0.7em;
+            margin-top: 15px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.7; text-shadow: 0 0 5px #00ff88; }
+            50% { opacity: 1; text-shadow: 0 0 15px #00ff88; }
+        }
+
+
+
+        .result-section {
+            background: rgba(0, 255, 136, 0.05);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            color: #00ff88;
+            font-size: 1em;
+        }
+
+        .speaker-button {
+            background: rgba(0, 136, 255, 0.2);
+            border: 2px solid #0088ff;
+            color: #00ccff;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speaker-button:hover {
+            background: rgba(0, 136, 255, 0.4);
+        }
+
+        .definition {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ccff;
+            padding: 15px;
+            margin: 15px 0;
+            color: #00ccff;
+            font-size: 0.7em;
+            line-height: 1.6;
+        }
+
+        .inspirational-quote {
+            background: rgba(255, 136, 0, 0.1);
+            border: 2px solid #ff8800;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffaa00;
+            font-size: 0.7em;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .xp-gained {
+            text-align: center;
+            color: #00ff88;
+            font-size: 0.8em;
+            margin-top: 15px;
+            animation: bounce 0.5s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Translation Log */
+        .log-section {
+            background: rgba(0, 255, 136, 0.05);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            color: #00ff88;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ccff;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 0.6em;
+            color: #fff;
+        }
+
+        .log-date {
+            color: #00ccff;
+            margin-bottom: 8px;
+        }
+
+        .log-translation {
+            color: #00ff88;
+        }
+
+        /* Settings Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(0, 20, 10, 0.98);
+            border: 4px solid #00ff88;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            color: #00ff88;
+            font-size: 1.5em;
+        }
+
+        .close-button {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6em;
+            cursor: pointer;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 0, 0, 0.4);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ccff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
