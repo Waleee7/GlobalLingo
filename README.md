@@ -6,6 +6,13 @@ Whether you’re abroad or just expanding your vocabulary, GlobalLingo makes lan
 
 ---
 
+## Live Demo 🚀
+
+Try GlobalLingo live:  
+👉 [global-lingo.vercel.app](https://global-lingo.vercel.app)  
+
+---
+
 ## Tech Stack 🛠️
 
 - **HTML5** — Provides the semantic structure for the app, including navigation and interface elements.  
@@ -41,13 +48,6 @@ Whether you’re abroad or just expanding your vocabulary, GlobalLingo makes lan
 
 - **Persistent Learning** *(optional feature for future versions)*  
   Keep track of previously translated phrases and usage streaks for ongoing practice.  
-
----
-
-## Live Demo 🚀
-
-Try GlobalLingo live:  
-👉 [https://global-lingo.vercel.app](https://global-lingo.vercel.app)  
 
 ---
 
