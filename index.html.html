@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Lingo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div id="earth-container"></div>
+    
+    <div class="container">
+        <!-- Startup Screen -->
+        <div id="startup-screen" class="startup-screen">
+            <h1>GLOBAL LINGO</h1>
+            <p class="tagline">Break language barriers with force. Earn rewards, unlock new languages, keep streaks alive while translating the world.</p>
+            <p class="greeting">Hello / مرحبا / 你好 / Hola / Bonjour</p>
+            <button class="pixel-button" onclick="initializeApp()">Initialize Translation</button>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen hidden">
+            <div class="loading-text" id="loading-text">Loading Global Lingo...</div>
+            <div class="loading-bar">
+                <div class="loading-fill" id="loading-fill"></div>
+            </div>
+        </div>
+
+        <!-- Profile Setup -->
+        <div id="profile-setup" class="profile-setup hidden">
+            <h2>Create Your Profile</h2>
+            <div class="form-group">
+                <label>Enter Your Name:</label>
+                <input type="text" id="username-input" placeholder="Your Name" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>Choose Your Avatar:</label>
+                <div class="avatar-grid" id="avatar-grid"></div>
+            </div>
+            <button class="pixel-button" onclick="saveProfile()">Start Translating</button>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="main-app hidden">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="profile-section">
+                    <div class="profile-avatar" id="profile-avatar">🌍</div>
+                    <div class="profile-name" id="profile-name">Translator</div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-label">Total XP</div>
+                    <div class="xp-value" id="total-xp">0</div>
+                </div>
+
+                <div class="streak-section">
+                    <div class="streak-label">🔥 Day Streak</div>
+                    <div class="streak-value" id="streak-days">0</div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-label">Translations Today</div>
+                    <div class="xp-value" id="daily-translations">0 / 2</div>
+                </div>
+
+                <div class="badges-section">
+                    <div class="badges-title">Badges</div>
+                    <div class="badges-grid" id="badges-grid"></div>
+                </div>
+
+                <button class="settings-button" onclick="openSettings()">⚙️ Settings</button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="app-header">
+                    <h1 class="app-title">GLOBAL LINGO</h1>
+                    <div class="daily-goal">Complete 2 translations to maintain your streak!</div>
+                </div>
+
+                <div class="translation-container">
+                    <!-- Input Box -->
+                    <div class="translation-box">
+                        <div class="box-header">
+                            <div class="box-title">From:</div>
+                            <select class="language-select" id="from-lang">
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <textarea class="text-area" id="input-text" placeholder="Enter word or sentence..."></textarea>
+                    </div>
+
+                    <!-- Output Box -->
+                    <div class="translation-box">
+                        <div class="box-header">
+                            <div class="box-title">To:</div>
+                            <select class="language-select" id="to-lang"></select>
+                        </div>
+                        <textarea class="text-area" id="output-text" placeholder="Translation appears here..." readonly></textarea>
+                    </div>
+                </div>
+
+                <div class="globe-button-container">
+                    <div class="globe-button" id="globe-button" onclick="translateText()">🌍</div>
+                    <div class="translate-prompt">Click Globe to Translate</div>
+                </div>
+
+                <!-- Result Section -->
+                <div class="result-section" id="result-section">
+                    <div class="result-header">
+                        <div class="result-title">Translation Complete!</div>
+                        <button class="speaker-button" onclick="speakTranslation()">🔊 Speak</button>
+                    </div>
+                    <div class="definition" id="definition"></div>
+                    <div class="inspirational-quote" id="quote"></div>
+                    <div class="xp-gained" id="xp-gained"></div>
+                </div>
+
+                <!-- Translation Log -->
+                <div class="log-section">
+                    <div class="log-title">Translation History</div>
+                    <div id="translation-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <button class="close-button" onclick="closeSettings()">Close</button>
+            </div>
+            <div class="form-group">
+                <label>Change Name:</label>
+                <input type="text" id="settings-username" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>Change Avatar:</label>
+                <div class="avatar-grid" id="settings-avatar-grid"></div>
+            </div>
+            <button class="pixel-button" onclick="updateProfile()">Save Changes</button>
+        </div>
+    </div>
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="src/js/globe.js"></script>
+<script src="src/js/main.js"></script>
+  
+</body>
+</html>
