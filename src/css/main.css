@@ -717,3 +717,23 @@
             display: none !important;
         }
 
+        /* Built By */
+        .built-by {
+            text-align: center;
+            font-size: 0.5em;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1.8;
+            margin: 10px 0 5px;
+        }
+
+        .built-by a {
+            color: rgba(0, 255, 136, 0.6);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .built-by a:hover {
+            color: #00ff88;
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+        }
+
