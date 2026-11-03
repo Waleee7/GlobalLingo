@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 420" width="1280" height="420" role="img" aria-labelledby="t d">
+  <title id="t">GlobalLingo</title>
+  <desc id="d">An animated globe turns while the word hello changes language: Hello, Hola, Bonjour, Konnichiwa, Marhaba, Privet. Three translation engines light up in turn: on-device, MyMemory, phrasebook.</desc>
+  <style>
+    .bg { fill: #07090e; }
+    .mono { font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; }
+    .serif { font-family: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif; }
+    .kicker { font-size: 15px; letter-spacing: 4px; fill: #ffb020; }
+    .title { font-size: 112px; fill: #e8ecf3; letter-spacing: -2px; }
+    .title i { font-style: italic; }
+    .sub { font-size: 18px; fill: #a3aec1; }
+    .globe { fill: #0d1626; stroke: #3b4c6b; stroke-width: 1.5; }
+    .mer { fill: none; stroke: #5d7399; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: turn 8s linear infinite; }
+    .rim { fill: none; stroke: #3b4c6b; stroke-width: 1.5; }
+    .lat { fill: none; stroke: #33425c; stroke-width: 1; }
+    .glow { fill: none; stroke: #9db4d6; stroke-opacity: .18; stroke-width: 14; }
+    .arc { fill: none; stroke: #ffb020; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 340; stroke-dashoffset: 340; animation: fly 6s ease-in-out infinite; }
+    .pin { fill: #ffb020; }
+    .pin2 { fill: #ffb020; animation: pulse 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .hello { font-size: 54px; fill: #e8ecf3; opacity: 0; text-anchor: start; animation: say 12s linear infinite; }
+    .hello:nth-of-type(1) { opacity: 1; }
+    .box { fill: none; stroke: #5d6b84; stroke-width: 1.5; }
+    .eng { font-size: 13px; letter-spacing: 3px; fill: #a3aec1; font-weight: 600; }
+    .fill { fill: #ffb020; opacity: 0; animation: tier 9s linear infinite; }
+    .engon { fill: #1a1203; font-size: 13px; letter-spacing: 3px; font-weight: 600; opacity: 0; animation: tier 9s linear infinite; }
+    @keyframes turn { 0% { transform: scaleX(1); } 50% { transform: scaleX(.03); } 100% { transform: scaleX(1); } }
+    @keyframes fly { 0%, 8% { stroke-dashoffset: 340; opacity: 1; } 55% { stroke-dashoffset: 0; opacity: 1; } 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+    @keyframes pulse { 0%, 45% { transform: scale(1); opacity: 1; } 60% { transform: scale(1.9); opacity: .6; } 75%, 100% { transform: scale(1); opacity: 1; } }
+    @keyframes say { 0% { opacity: 0; transform: translateY(8px); } 2.5%, 14% { opacity: 1; transform: none; } 16.6%, 100% { opacity: 0; transform: none; } }
+    @keyframes tier { 0% { opacity: 0; } 2%, 31% { opacity: 1; } 33.4%, 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .mer, .arc, .pin2, .hello, .fill, .engon { animation: none !important; }
+      .m1 { transform: scaleX(.92); } .m2 { transform: scaleX(.62); } .m3 { transform: scaleX(.3); } .m4 { transform: scaleX(.06); }
+      .arc { stroke-dasharray: none; stroke-dashoffset: 0; opacity: 1; }
+      .hello { opacity: 0; }
+      .hello:nth-of-type(1) { opacity: 1; }
+    }
+  </style>
+  <rect class="bg" width="1280" height="420"/>
+  <!-- stars -->
+  <g fill="#cfd8e8" opacity=".5">
+    <circle cx="90" cy="40" r="1.3"/><circle cx="410" cy="26" r="1"/><circle cx="640" cy="70" r="1.4"/><circle cx="780" cy="30" r="1"/><circle cx="1180" cy="52" r="1.3"/>
+    <circle cx="1240" cy="190" r="1"/><circle cx="800" cy="380" r="1.2"/><circle cx="1150" cy="380" r="1"/><circle cx="560" cy="392" r="1.3"/><circle cx="40" cy="330" r="1"/>
+  </g>
+
+  <text class="mono kicker" x="64" y="82">SAY IT ANYWHERE</text>
+  <text class="serif title" x="58" y="190">Global<tspan font-style="italic">Lingo</tspan></text>
+  <text class="mono sub" x="64" y="250">Spin the globe. Pick a country. Say it in its language.</text>
+
+  <!-- the greeting -->
+  <g class="serif">
+    <text class="hello" x="64" y="324">Hello</text>
+    <text class="hello" x="64" y="324" style="animation-delay:2s">Hola</text>
+    <text class="hello" x="64" y="324" style="animation-delay:4s">Bonjour</text>
+    <text class="hello" x="64" y="324" style="animation-delay:6s">こんにちは</text>
+    <text class="hello" x="64" y="324" style="animation-delay:8s">مرحبا</text>
+    <text class="hello" x="64" y="324" style="animation-delay:10s">Привет</text>
+  </g>
+
+  <!-- the three engines, lit in order -->
+  <g class="mono" transform="translate(64 356)">
+    <rect class="box" x="0" y="0" width="160" height="34"/><rect class="fill" x="0" y="0" width="160" height="34"/>
+    <text class="eng" x="18" y="22">ON-DEVICE</text><text class="engon" x="18" y="22">ON-DEVICE</text>
+    <rect class="box" x="176" y="0" width="156" height="34"/><rect class="fill" x="176" y="0" width="156" height="34" style="animation-delay:3s"/>
+    <text class="eng" x="194" y="22">MYMEMORY</text><text class="engon" x="194" y="22" style="animation-delay:3s">MYMEMORY</text>
+    <rect class="box" x="348" y="0" width="172" height="34" stroke-dasharray="5 4"/><rect class="fill" x="348" y="0" width="172" height="34" style="animation-delay:6s"/>
+    <text class="eng" x="366" y="22">PHRASEBOOK</text><text class="engon" x="366" y="22" style="animation-delay:6s">PHRASEBOOK</text>
+  </g>
+
+  <!-- globe -->
+  <g transform="translate(1000 210)">
+    <circle class="glow" r="138"/>
+    <circle class="globe" r="130"/>
+    <ellipse class="lat" rx="130" ry="0.01"/>
+    <path class="lat" d="M-112 -66 Q0 -92 112 -66 M-112 66 Q0 92 112 66 M-129 -16 Q0 -30 129 -16 M-129 16 Q0 30 129 16" />
+    <ellipse class="mer m1" rx="130" ry="130"/>
+    <ellipse class="mer m2" rx="130" ry="130" style="animation-delay:-2s"/>
+    <ellipse class="mer m3" rx="130" ry="130" style="animation-delay:-4s"/>
+    <ellipse class="mer m4" rx="130" ry="130" style="animation-delay:-6s"/>
+    <circle class="rim" r="130"/>
+    <path class="arc" d="M-62 20 Q-10 -150 70 -34"/>
+    <circle class="pin" cx="-62" cy="20" r="5"/>
+    <circle class="pin2" cx="70" cy="-34" r="6"/>
+  </g>
+</svg>
