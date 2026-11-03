@@ -1,974 +1,569 @@
-        // ==========================================
-        // ANIMATED BACKGROUND SYSTEM
-        // ==========================================
-        const bgCanvas = document.getElementById('background-canvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        
-        let backgroundActive = false;
-        let timeOfDay = 'day'; // will be set based on user's time
-        
-        // Grass blades for animation
-        let grassBlades = [];
-        let clouds = [];
-        let birds = [];
-        
-        function resizeBgCanvas() {
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
-            initializeBackground();
-        }
-        
-        function initializeBackground() {
-            // Determine time of day
-            const hour = new Date().getHours();
-            if (hour >= 6 && hour < 12) timeOfDay = 'morning';
-            else if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
-            else if (hour >= 17 && hour < 20) timeOfDay = 'evening';
-            else timeOfDay = 'night';
-            
-            // Initialize grass blades
-            grassBlades = [];
-            for (let i = 0; i < 150; i++) {
-                grassBlades.push({
-                    x: Math.random() * bgCanvas.width,
-                    y: bgCanvas.height - Math.random() * 200,
-                    height: 40 + Math.random() * 60,
-                    width: 2 + Math.random() * 3,
-                    swayOffset: Math.random() * Math.PI * 2,
-                    swaySpeed: 0.02 + Math.random() * 0.03,
-                    baseColor: {
-                        r: 34 + Math.random() * 40,
-                        g: 139 + Math.random() * 40,
-                        b: 34 + Math.random() * 20
-                    }
-                });
-            }
-            
-            // Initialize clouds
-            clouds = [];
-            for (let i = 0; i < 8; i++) {
-                clouds.push({
-                    x: Math.random() * bgCanvas.width,
-                    y: 50 + Math.random() * 150,
-                    width: 80 + Math.random() * 120,
-                    height: 40 + Math.random() * 40,
-                    speed: 0.1 + Math.random() * 0.3,
-                    opacity: 0.3 + Math.random() * 0.4
-                });
-            }
-            
-            // Initialize birds
-            birds = [];
-            for (let i = 0; i < 5; i++) {
-                birds.push({
-                    x: -100 + Math.random() * bgCanvas.width,
-                    y: 100 + Math.random() * 200,
-                    speed: 1 + Math.random() * 2,
-                    wingPhase: Math.random() * Math.PI * 2,
-                    active: Math.random() > 0.5
-                });
-            }
-        }
-        
-        function drawBackground() {
-            if (!backgroundActive) return;
-            
-            // Sky gradient based on time of day
-            const skyGradient = bgCtx.createLinearGradient(0, 0, 0, bgCanvas.height);
-            
-            switch(timeOfDay) {
-                case 'morning':
-                    skyGradient.addColorStop(0, '#87CEEB');
-                    skyGradient.addColorStop(1, '#B0E0E6');
-                    break;
-                case 'afternoon':
-                    skyGradient.addColorStop(0, '#4A90E2');
-                    skyGradient.addColorStop(1, '#87CEEB');
-                    break;
-                case 'evening':
-                    skyGradient.addColorStop(0, '#FF6B35');
-                    skyGradient.addColorStop(0.5, '#F7931E');
-                    skyGradient.addColorStop(1, '#FDC830');
-                    break;
-                case 'night':
-                    skyGradient.addColorStop(0, '#0B1026');
-                    skyGradient.addColorStop(1, '#1a237e');
-                    break;
-            }
-            
-            bgCtx.fillStyle = skyGradient;
-            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-            
-            // Draw stars for night
-            if (timeOfDay === 'night') {
-                bgCtx.fillStyle = '#ffffff';
-                for (let i = 0; i < 100; i++) {
-                    const x = (i * 137.5) % bgCanvas.width;
-                    const y = (i * 97.3) % (bgCanvas.height * 0.6);
-                    bgCtx.fillRect(x, y, 2, 2);
-                }
-            }
-            
-            // Draw and animate clouds
-            clouds.forEach(cloud => {
-                bgCtx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
-                bgCtx.beginPath();
-                bgCtx.ellipse(cloud.x, cloud.y, cloud.width, cloud.height, 0, 0, Math.PI * 2);
-                bgCtx.fill();
-                
-                // Smaller cloud puffs
-                bgCtx.ellipse(cloud.x + cloud.width * 0.5, cloud.y, cloud.width * 0.7, cloud.height * 0.8, 0, 0, Math.PI * 2);
-                bgCtx.fill();
-                bgCtx.ellipse(cloud.x - cloud.width * 0.5, cloud.y, cloud.width * 0.6, cloud.height * 0.7, 0, 0, Math.PI * 2);
-                bgCtx.fill();
-                
-                cloud.x += cloud.speed;
-                if (cloud.x > bgCanvas.width + cloud.width) {
-                    cloud.x = -cloud.width;
-                }
-            });
-            
-            // Draw ground/field
-            const groundGradient = bgCtx.createLinearGradient(0, bgCanvas.height * 0.6, 0, bgCanvas.height);
-            groundGradient.addColorStop(0, '#4d7c0f');
-            groundGradient.addColorStop(0.5, '#65a30d');
-            groundGradient.addColorStop(1, '#4d7c0f');
-            bgCtx.fillStyle = groundGradient;
-            bgCtx.fillRect(0, bgCanvas.height * 0.6, bgCanvas.width, bgCanvas.height * 0.4);
-            
-            // Draw rolling hills
-            bgCtx.fillStyle = '#65a30d';
-            bgCtx.beginPath();
-            bgCtx.moveTo(0, bgCanvas.height * 0.65);
-            for (let x = 0; x < bgCanvas.width; x += 50) {
-                const y = bgCanvas.height * 0.65 + Math.sin(x * 0.01 + Date.now() * 0.0001) * 30;
-                bgCtx.lineTo(x, y);
-            }
-            bgCtx.lineTo(bgCanvas.width, bgCanvas.height);
-            bgCtx.lineTo(0, bgCanvas.height);
-            bgCtx.fill();
-            
-            // Draw animated grass blades
-            const time = Date.now() * 0.001;
-            grassBlades.forEach(blade => {
-                const sway = Math.sin(time * blade.swaySpeed + blade.swayOffset) * 8;
-                
-                bgCtx.save();
-                bgCtx.translate(blade.x, blade.y);
-                
-                const gradient = bgCtx.createLinearGradient(0, 0, 0, -blade.height);
-                gradient.addColorStop(0, `rgb(${blade.baseColor.r * 0.7}, ${blade.baseColor.g * 0.7}, ${blade.baseColor.b * 0.7})`);
-                gradient.addColorStop(1, `rgb(${blade.baseColor.r}, ${blade.baseColor.g}, ${blade.baseColor.b})`);
-                
-                bgCtx.fillStyle = gradient;
-                bgCtx.beginPath();
-                bgCtx.moveTo(0, 0);
-                bgCtx.quadraticCurveTo(sway / 2, -blade.height / 2, sway, -blade.height);
-                bgCtx.lineTo(sway - blade.width, -blade.height);
-                bgCtx.quadraticCurveTo(sway / 2, -blade.height / 2, -blade.width, 0);
-                bgCtx.closePath();
-                bgCtx.fill();
-                
-                bgCtx.restore();
-            });
-            
-            // Draw and animate birds
-            birds.forEach(bird => {
-                if (!bird.active) {
-                    if (Math.random() < 0.001) bird.active = true;
-                    return;
-                }
-                
-                bird.wingPhase += 0.15;
-                const wingUp = Math.sin(bird.wingPhase) > 0;
-                
-                bgCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                bgCtx.font = '20px Arial';
-                bgCtx.fillText(wingUp ? '🦅' : '🦆', bird.x, bird.y);
-                
-                bird.x += bird.speed;
-                bird.y += Math.sin(bird.x * 0.01) * 0.5;
-                
-                if (bird.x > bgCanvas.width + 50) {
-                    bird.x = -50;
-                    bird.y = 100 + Math.random() * 200;
-                    bird.active = Math.random() > 0.3;
-                }
-            });
-            
-            requestAnimationFrame(drawBackground);
-        }
+// The globe. A country-accurate world drawn once to a canvas texture, wrapped on a Three.js sphere.
+// Falls back to a flat, equally clickable map when WebGL (or the CDN) is unavailable.
+//
+// No UI knowledge lives here: main.js hands in callbacks and a layout function.
 
-        // ==========================================
-        // THREE.JS 3D EARTH GLOBE
-        // ==========================================
-        let scene, camera, renderer, earth, earthContainer;
-        let globeRotationSpeed = 0.001;
-        
-        function initEarthGlobe() {
-            earthContainer = document.getElementById('earth-container');
-            
-            // Scene setup
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 2.5;
-            
-            // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000000, 0);
-            earthContainer.appendChild(renderer.domElement);
-            
-            // Create Earth sphere
-            const geometry = new THREE.SphereGeometry(0.8, 64, 64);
-            
-            // Create Earth texture using canvas
-            const textureCanvas = document.createElement('canvas');
-            textureCanvas.width = 2048;
-            textureCanvas.height = 1024;
-            const texCtx = textureCanvas.getContext('2d');
-            
-            // Draw ocean (blue)
-            texCtx.fillStyle = '#0066cc';
-            texCtx.fillRect(0, 0, 2048, 1024);
-            
-            // Draw continents (green) - simplified but recognizable shapes
-            texCtx.fillStyle = '#228B22';
-            
-            // North America
-            texCtx.beginPath();
-            texCtx.moveTo(300, 200);
-            texCtx.bezierCurveTo(250, 150, 350, 180, 400, 220);
-            texCtx.bezierCurveTo(450, 300, 420, 400, 380, 450);
-            texCtx.bezierCurveTo(320, 420, 280, 350, 300, 200);
-            texCtx.fill();
-            
-            // South America
-            texCtx.beginPath();
-            texCtx.moveTo(450, 500);
-            texCtx.bezierCurveTo(480, 550, 490, 650, 470, 700);
-            texCtx.bezierCurveTo(450, 750, 400, 740, 380, 680);
-            texCtx.bezierCurveTo(370, 600, 400, 520, 450, 500);
-            texCtx.fill();
-            
-            // Europe
-            texCtx.beginPath();
-            texCtx.moveTo(950, 220);
-            texCtx.bezierCurveTo(1000, 200, 1050, 240, 1080, 280);
-            texCtx.bezierCurveTo(1070, 320, 1020, 340, 970, 320);
-            texCtx.bezierCurveTo(940, 280, 930, 240, 950, 220);
-            texCtx.fill();
-            
-            // Africa
-            texCtx.beginPath();
-            texCtx.moveTo(1000, 350);
-            texCtx.bezierCurveTo(1050, 360, 1100, 400, 1120, 480);
-            texCtx.bezierCurveTo(1130, 600, 1080, 700, 1020, 740);
-            texCtx.bezierCurveTo(950, 720, 920, 650, 940, 550);
-            texCtx.bezierCurveTo(960, 450, 970, 370, 1000, 350);
-            texCtx.fill();
-            
-            // Asia
-            texCtx.beginPath();
-            texCtx.moveTo(1200, 180);
-            texCtx.bezierCurveTo(1350, 160, 1500, 200, 1600, 280);
-            texCtx.bezierCurveTo(1650, 350, 1620, 450, 1550, 500);
-            texCtx.bezierCurveTo(1450, 520, 1350, 480, 1280, 420);
-            texCtx.bezierCurveTo(1220, 350, 1180, 240, 1200, 180);
-            texCtx.fill();
-            
-            // Australia
-            texCtx.beginPath();
-            texCtx.moveTo(1550, 620);
-            texCtx.bezierCurveTo(1620, 630, 1680, 670, 1690, 720);
-            texCtx.bezierCurveTo(1680, 760, 1630, 780, 1580, 770);
-            texCtx.bezierCurveTo(1530, 750, 1510, 700, 1520, 660);
-            texCtx.bezierCurveTo(1530, 635, 1540, 625, 1550, 620);
-            texCtx.fill();
-            
-            // Add texture detail (darker greens for terrain)
-            texCtx.fillStyle = '#1a6b1a';
-            for (let i = 0; i < 500; i++) {
-                const x = Math.random() * 2048;
-                const y = Math.random() * 1024;
-                texCtx.fillRect(x, y, 2 + Math.random() * 4, 2 + Math.random() * 4);
-            }
-            
-            // Create texture from canvas
-            const texture = new THREE.CanvasTexture(textureCanvas);
-            
-            // Materials with realistic properties
-            const material = new THREE.MeshPhongMaterial({
-                map: texture,
-                shininess: 5,
-                specular: new THREE.Color(0x333333)
-            });
-            
-            earth = new THREE.Mesh(geometry, material);
-            scene.add(earth);
-            
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 3, 5);
-            scene.add(directionalLight);
-            
-            // Add subtle atmospheric glow
-            const glowGeometry = new THREE.SphereGeometry(0.85, 64, 64);
-            const glowMaterial = new THREE.MeshBasicMaterial({
-                color: 0x0088ff,
-                transparent: true,
-                opacity: 0.15,
-                side: THREE.BackSide
-            });
-            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-            scene.add(glow);
-            
-            animateEarth();
-        }
-        
-        function animateEarth() {
-            requestAnimationFrame(animateEarth);
-            
-            if (earth) {
-                earth.rotation.y += globeRotationSpeed;
-            }
-            
-            renderer.render(scene, camera);
-        }
-        
-        window.addEventListener('resize', () => {
-            if (camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-            resizeBgCanvas();
-        });
+import { COUNTRY_LANG, BY_CODE } from './languages.js';
 
-        // ==========================================
-        // GAME DATA & STATE
-        // ==========================================
-        // ==========================================
-        // GAME DATA & STATE
-        // ==========================================
-        
-        const starterLanguages = [
-            { code: 'en', name: 'English' },
-            { code: 'es', name: 'Spanish' },
-            { code: 'fr', name: 'French' },
-            { code: 'de', name: 'German' },
-            { code: 'it', name: 'Italian' },
-            { code: 'pt', name: 'Portuguese' },
-            { code: 'zh', name: 'Chinese' },
-            { code: 'ja', name: 'Japanese' },
-            { code: 'ko', name: 'Korean' },
-            { code: 'ar', name: 'Arabic' }
-        ];
+const D2R = Math.PI / 180;
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
 
-        const unlockableLanguages = [
-            { code: 'ru', name: 'Russian' },
-            { code: 'hi', name: 'Hindi' },
-            { code: 'tr', name: 'Turkish' },
-            { code: 'nl', name: 'Dutch' },
-            { code: 'sv', name: 'Swedish' },
-            { code: 'pl', name: 'Polish' },
-            { code: 'vi', name: 'Vietnamese' },
-            { code: 'th', name: 'Thai' },
-            { code: 'id', name: 'Indonesian' },
-            { code: 'uk', name: 'Ukrainian' },
-            { code: 'ro', name: 'Romanian' },
-            { code: 'el', name: 'Greek' },
-            { code: 'cs', name: 'Czech' },
-            { code: 'da', name: 'Danish' },
-            { code: 'fi', name: 'Finnish' },
-            { code: 'hu', name: 'Hungarian' },
-            { code: 'he', name: 'Hebrew' },
-            { code: 'no', name: 'Norwegian' },
-            { code: 'sk', name: 'Slovak' },
-            { code: 'bg', name: 'Bulgarian' }
-        ];
+export const PALETTE = {
+  ocean: '#08111d', oceanMid: '#0c1a2c', grid: 'rgba(150,185,230,0.10)',
+  land: '#2a384f', landLang: '#40577a', border: '#0b1422', coast: 'rgba(190,212,245,0.55)',
+  amber: '255,176,32', cool: '178,200,235',
+};
 
-        const starterAvatars = ['🌍', '🌎', '🌏', '🗺️', '🧭', '✈️', '🚀', '🛸'];
-        const unlockableAvatars = ['👽', '🤖', '🦾', '🦿', '🎯', '⚡', '🔥', '⭐', '💎', '🏆', '👑', '🎨'];
+// ----------------------------------------------------------------- world data
 
-        const badges = [
-            { emoji: '🎯', name: 'First Translation', requirement: 1 },
-            { emoji: '💯', name: '100 XP Master', requirement: 100 },
-            { emoji: '🔥', name: '7 Day Streak', requirement: 7 },
-            { emoji: '📚', name: 'Polyglot', requirement: 'unlockAll' },
-            { emoji: '🏆', name: '1000 XP Legend', requirement: 1000 },
-            { emoji: '⚡', name: 'Speed Demon', requirement: 'special' }
-        ];
+function decodeTopology(topo) {
+  const [sx, sy] = topo.transform.scale;
+  const [tx, ty] = topo.transform.translate;
+  const arcs = topo.arcs.map((arc) => {
+    let x = 0; let y = 0;
+    return arc.map(([dx, dy]) => { x += dx; y += dy; return [x * sx + tx, y * sy + ty]; });
+  });
+  const ring = (idx) => {
+    const pts = [];
+    for (const i of idx) {
+      const a = i < 0 ? arcs[~i].slice().reverse() : arcs[i];
+      for (let k = pts.length ? 1 : 0; k < a.length; k++) pts.push(a[k]);
+    }
+    // Rings that cross the antimeridian jump from +180 to -180; unwrap so they stay continuous
+    // (longitudes may then run past 180, and drawing/picking account for that).
+    for (let k = 1; k < pts.length; k++) {
+      const d = pts[k][0] - pts[k - 1][0];
+      if (d > 180) pts[k] = [pts[k][0] - 360, pts[k][1]]; else if (d < -180) pts[k] = [pts[k][0] + 360, pts[k][1]];
+    }
+    return pts;
+  };
+  const area = (r) => { let a = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] * r[i][1]) - (r[i][0] * r[j][1]); return a / 2; };
+  const centroid = (r) => {
+    let a = 0; let cx = 0; let cy = 0;
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      const f = (r[j][0] * r[i][1]) - (r[i][0] * r[j][1]);
+      a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f;
+    }
+    a /= 2;
+    return a ? [cx / (6 * a), cy / (6 * a)] : r[0];
+  };
 
-        // Game State
-        let gameState = {
-            profile: {
-                name: 'Translator',
-                avatar: '🌍'
-            },
-            xp: 0,
-            streak: {
-                days: 0,
-                lastLogin: null
-            },
-            dailyTranslations: 0,
-            unlockedLanguages: [...starterLanguages],
-            unlockedAvatars: [...starterAvatars],
-            badges: [],
-            translationLog: []
-        };
+  const countries = topo.objects.countries.geometries.map((g) => {
+    const polys = (g.type === 'Polygon' ? [g.arcs] : g.arcs).map((p) => {
+      const rings = p.map(ring);
+      let minX = 1e9; let minY = 90; let maxX = -1e9; let maxY = -90;
+      for (const [x, y] of rings[0]) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+      return { rings, bbox: [minX, minY, maxX, maxY], size: Math.abs(area(rings[0])) };
+    });
+    const biggest = polys.reduce((a, b) => (b.size > a.size ? b : a));
+    const [rawLon, clat] = centroid(biggest.rings[0]);
+    const clon = ((rawLon + 540) % 360) - 180;
+    return { name: g.properties.name, id: g.id, polys, lon: clon, lat: clat, lang: COUNTRY_LANG.get(g.properties.name) ?? null };
+  });
+  const landGeom = topo.objects.land.geometries?.[0] ?? topo.objects.land;
+  const land = (landGeom.type === 'Polygon' ? [landGeom.arcs] : landGeom.arcs).map((p) => p.map(ring));
+  return { countries, land, byName: new Map(countries.map((c) => [c.name, c])) };
+}
 
-        // Load saved data
-        function loadGameState() {
-            const saved = localStorage.getItem('globalLingoState');
-            if (saved) {
-                gameState = JSON.parse(saved);
-                checkDailyLogin();
-            }
-        }
+function inRing(lon, lat, r) {
+  let inside = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [xi, yi] = r[i]; const [xj, yj] = r[j];
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
 
-        function saveGameState() {
-            localStorage.setItem('globalLingoState', JSON.stringify(gameState));
-        }
+function countryAt(world, lon, lat) {
+  for (const c of world.countries) {
+    for (const p of c.polys) {
+      const b = p.bbox;
+      if (lat < b[1] || lat > b[3]) continue;
+      for (const o of [0, 360, -360]) {
+        const x = lon + o;
+        if (x < b[0] || x > b[2]) continue;
+        if (inRing(x, lat, p.rings[0]) && !p.rings.slice(1).some((h) => inRing(x, lat, h))) return c;
+      }
+    }
+  }
+  return null;
+}
 
-        function checkDailyLogin() {
-            const today = new Date().toDateString();
-            const lastLogin = gameState.streak.lastLogin;
-            
-            if (lastLogin !== today) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toDateString();
-                
-                if (lastLogin === yesterdayStr) {
-                    // Consecutive day
-                    gameState.streak.days++;
-                    const loginXP = 10 + Math.max(0, gameState.streak.days - 7);
-                    gameState.xp += loginXP;
-                    showNotification(`🎉 Day ${gameState.streak.days} Streak! +${loginXP} XP`);
-                } else if (lastLogin) {
-                    // Streak broken
-                    gameState.streak.days = 1;
-                    gameState.xp += 10;
-                    showNotification('Streak reset. Starting fresh! +10 XP');
-                } else {
-                    // First login
-                    gameState.streak.days = 1;
-                    gameState.xp += 10;
-                }
-                
-                gameState.streak.lastLogin = today;
-                gameState.dailyTranslations = 0;
-                checkBadges();
-                saveGameState();
-            }
-        }
+// ----------------------------------------------------------------- painting
 
-        function showNotification(message) {
-            // Simple notification - could be enhanced
-            console.log(message);
-        }
+function addRing(ctx, r, W, H) {
+  for (const off of [-W, 0, W]) { // wrapped copies so antimeridian-crossing countries close cleanly
+    r.forEach(([lon, lat], i) => {
+      const x = ((lon + 180) / 360) * W + off; const y = ((90 - lat) / 180) * H;
+      if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    });
+    ctx.closePath();
+  }
+}
 
-        // Initialize App
-        function initializeApp() {
-            document.getElementById('startup-screen').classList.add('hidden');
-            document.getElementById('loading-screen').classList.remove('hidden');
-            
-            const loadingTexts = [
-                'Loading Global Lingo...',
-                'Gathering Languages...',
-                'Initializing Translator...',
-                'Connecting to Satellites...',
-                'Ready to Translate!'
-            ];
-            
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 20;
-                document.getElementById('loading-fill').style.width = progress + '%';
-                document.getElementById('loading-text').textContent = loadingTexts[progress / 20 - 1];
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('loading-screen').classList.add('hidden');
-                        loadGameState();
-                        if (!localStorage.getItem('globalLingoState')) {
-                            document.getElementById('profile-setup').classList.remove('hidden');
-                            populateAvatarGrid('avatar-grid', false);
-                        } else {
-                            showMainApp();
-                        }
-                    }, 500);
-                }
-            }, 600);
-        }
+function tracePolys(ctx, c, W, H) {
+  ctx.beginPath();
+  for (const p of c.polys) for (const r of p.rings) addRing(ctx, r, W, H);
+}
 
-        function populateAvatarGrid(gridId, includeUnlocked) {
-            const grid = document.getElementById(gridId);
-            grid.innerHTML = '';
-            
-            starterAvatars.forEach(avatar => {
-                const div = document.createElement('div');
-                div.className = 'avatar-option';
-                div.textContent = avatar;
-                div.onclick = () => selectAvatar(avatar, gridId);
-                grid.appendChild(div);
-            });
-            
-            if (includeUnlocked) {
-                unlockableAvatars.forEach(avatar => {
-                    const div = document.createElement('div');
-                    div.className = gameState.unlockedAvatars.includes(avatar) ? 'avatar-option' : 'avatar-option locked';
-                    div.textContent = avatar;
-                    if (gameState.unlockedAvatars.includes(avatar)) {
-                        div.onclick = () => selectAvatar(avatar, gridId);
-                    }
-                    grid.appendChild(div);
-                });
-            }
-        }
+function paintBase(canvas, world) {
+  const W = canvas.width; const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, PALETTE.ocean); g.addColorStop(0.5, PALETTE.oceanMid); g.addColorStop(1, PALETTE.ocean);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 
-        let selectedAvatar = '🌍';
-        function selectAvatar(avatar, gridId) {
-            selectedAvatar = avatar;
-            document.querySelectorAll(`#${gridId} .avatar-option`).forEach(el => {
-                el.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-        }
+  ctx.strokeStyle = PALETTE.grid; ctx.lineWidth = Math.max(1, W / 2600);
+  ctx.beginPath();
+  for (let lon = -180; lon <= 180; lon += 15) { const x = ((lon + 180) / 360) * W; ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let lat = -75; lat <= 75; lat += 15) { const y = ((90 - lat) / 180) * H; ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke();
 
-        function saveProfile() {
-            const username = document.getElementById('username-input').value.trim();
-            if (!username) {
-                alert('Please enter a name!');
-                return;
-            }
-            
-            gameState.profile.name = username;
-            gameState.profile.avatar = selectedAvatar;
-            gameState.streak.lastLogin = new Date().toDateString();
-            gameState.streak.days = 1;
-            gameState.xp = 10; // Welcome bonus
-            saveGameState();
-            showMainApp();
-        }
+  ctx.lineJoin = 'round';
+  for (const c of world.countries) {
+    tracePolys(ctx, c, W, H);
+    ctx.fillStyle = c.lang ? PALETTE.landLang : PALETTE.land;
+    ctx.fill('evenodd');
+    ctx.strokeStyle = PALETTE.border; ctx.lineWidth = Math.max(0.8, W / 3400);
+    ctx.stroke();
+  }
+  // coastline: one light line around every landmass so continents read at a glance
+  ctx.beginPath();
+  for (const poly of world.land) for (const r of poly) addRing(ctx, r, W, H);
+  ctx.strokeStyle = PALETTE.coast; ctx.lineWidth = Math.max(1, W / 2800);
+  ctx.stroke();
+}
 
-        function showMainApp() {
-            document.getElementById('profile-setup').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            
-            // Activate animated background
-            backgroundActive = true;
-            resizeBgCanvas();
-            drawBackground();
-            
-            // Initialize and show Three.js Earth
-            document.getElementById('earth-container').classList.add('active');
-            initEarthGlobe();
-            
-            updateUI();
-            populateLanguageSelects();
-            populateBadges();
-        }
+/** Highlight layer, painted on black so it can be used as an emissive map or added in 2D. */
+function paintHighlight(canvas, world, { to, from, hover, selected }) {
+  const W = canvas.width; const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.lineJoin = 'round';
+  const fillSet = (set, rgb, a) => {
+    if (!set?.size) return;
+    for (const c of world.countries) if (set.has(c.name)) { tracePolys(ctx, c, W, H); ctx.fillStyle = `rgba(${rgb},${a})`; ctx.fill('evenodd'); }
+  };
+  fillSet(from, PALETTE.cool, 0.2);
+  fillSet(to, PALETTE.amber, 0.34);
+  const one = (name, rgb, a, stroke) => {
+    const c = name && world.byName.get(name); if (!c) return;
+    tracePolys(ctx, c, W, H); ctx.fillStyle = `rgba(${rgb},${a})`; ctx.fill('evenodd');
+    if (stroke) { ctx.strokeStyle = `rgba(${rgb},1)`; ctx.lineWidth = Math.max(1.5, W / 1100); ctx.stroke(); }
+  };
+  one(selected, PALETTE.amber, 0.62, true);
+  if (hover && hover !== selected) one(hover, '255,255,255', 0.2, true);
+}
 
-        function updateUI() {
-            document.getElementById('profile-avatar').textContent = gameState.profile.avatar;
-            document.getElementById('profile-name').textContent = gameState.profile.name;
-            document.getElementById('total-xp').textContent = gameState.xp;
-            document.getElementById('streak-days').textContent = gameState.streak.days;
-            document.getElementById('daily-translations').textContent = `${gameState.dailyTranslations} / 2`;
-            
-            // Check for language unlock
-            if (gameState.xp >= 100 && gameState.unlockedLanguages.length === starterLanguages.length) {
-                gameState.unlockedLanguages = [...starterLanguages, ...unlockableLanguages];
-                gameState.unlockedAvatars = [...starterAvatars, ...unlockableAvatars.slice(0, 6)];
-                populateLanguageSelects();
-                showNotification('🎉 All Languages Unlocked!');
-                checkBadges();
-            }
-            
-            // Update translation log
-            const logContainer = document.getElementById('translation-log');
-            logContainer.innerHTML = '';
-            gameState.translationLog.slice().reverse().forEach(log => {
-                const entry = document.createElement('div');
-                entry.className = 'log-entry';
-                entry.innerHTML = `
-                    <div class="log-date">${log.date}</div>
-                    <div class="log-translation">${log.from} → ${log.to}: "${log.original}" = "${log.translated}"</div>
-                `;
-                logContainer.appendChild(entry);
-            });
-        }
+const toVec = (THREE, lat, lon, r = 1) => new THREE.Vector3(Math.cos(lat * D2R) * Math.cos(lon * D2R) * r, Math.sin(lat * D2R) * r, -Math.cos(lat * D2R) * Math.sin(lon * D2R) * r);
 
-        function populateLanguageSelects() {
-            const fromSelect = document.getElementById('from-lang');
-            const toSelect = document.getElementById('to-lang');
-            
-            fromSelect.innerHTML = '';
-            toSelect.innerHTML = '';
-            
-            gameState.unlockedLanguages.forEach(lang => {
-                const option1 = document.createElement('option');
-                option1.value = lang.code;
-                option1.textContent = lang.name;
-                fromSelect.appendChild(option1);
-                
-                const option2 = document.createElement('option');
-                option2.value = lang.code;
-                option2.textContent = lang.name;
-                toSelect.appendChild(option2);
-            });
-            
-            // Set default
-            toSelect.value = 'es';
-        }
+// ----------------------------------------------------------------- shared setup
 
-        function populateBadges() {
-            const grid = document.getElementById('badges-grid');
-            grid.innerHTML = '';
-            
-            badges.forEach(badge => {
-                const div = document.createElement('div');
-                const earned = checkBadgeEarned(badge);
-                div.className = earned ? 'badge' : 'badge locked';
-                div.innerHTML = `
-                    ${badge.emoji}
-                    <div class="badge-tooltip">${badge.name}</div>
-                `;
-                grid.appendChild(div);
-            });
-        }
+function webglOk() {
+  try {
+    const c = document.createElement('canvas');
+    return Boolean(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch { return false; }
+}
 
-        function checkBadgeEarned(badge) {
-            if (badge.requirement === 'unlockAll') {
-                return gameState.unlockedLanguages.length > starterLanguages.length;
-            }
-            if (badge.requirement === 'special') {
-                return false; // Special achievements
-            }
-            if (badge.name.includes('Streak')) {
-                return gameState.streak.days >= badge.requirement;
-            }
-            if (badge.name.includes('XP')) {
-                return gameState.xp >= badge.requirement;
-            }
-            if (badge.name.includes('Translation')) {
-                return gameState.translationLog.length >= badge.requirement;
-            }
-            return false;
-        }
+const names = (code) => new Set(BY_CODE[code]?.countries ?? []);
 
-        function checkBadges() {
-            populateBadges();
-        }
+/**
+ * createGlobe({ canvas, worldUrl, layout, onHover, onPick, onView, onReady, reducedMotion })
+ *   layout(W,H) -> { cx, cy, radius }     where the globe sits, in CSS pixels
+ * Returns an object with: kind, setState, flyToLanguage, flyToCountry, arc, resize, setReducedMotion, centerCountry
+ */
+export async function createGlobe(opts) {
+  const world = decodeTopology(await (await fetch(opts.worldUrl)).json());
+  let THREE = null;
+  if (webglOk()) {
+    try { THREE = await import('three'); } catch (err) { console.warn('three.js could not be loaded; using the flat map.', err); }
+  }
+  if (THREE) {
+    try { return buildWebGL(THREE, world, opts); } catch (err) { console.warn('WebGL setup failed; using the flat map.', err); }
+  }
+  return buildFlat(world, opts);
+}
 
-        // Comprehensive Offline Translation System
-        async function translateText() {
-            const inputText = document.getElementById('input-text').value.trim();
-            if (!inputText) {
-                alert('Please enter text to translate!');
-                return;
-            }
-            
-            const fromLang = document.getElementById('from-lang').value;
-            const toLang = document.getElementById('to-lang').value;
-            
-            if (fromLang === toLang) {
-                alert('Please select different languages!');
-                return;
-            }
-            
-            // Animate globe - 720 degree spin
-            const globe = document.getElementById('globe-button');
-            globe.classList.add('spinning');
-            
-            setTimeout(async () => {
-                // Use comprehensive offline translation
-                const translated = getFallbackTranslation(inputText, toLang);
-                
-                globe.classList.remove('spinning');
-                
-                document.getElementById('output-text').value = translated;
-                
-                // Calculate XP
-                const wordCount = inputText.trim().split(/\s+/).length;
-                const xpGained = wordCount >= 4 ? 10 : 5;
-                gameState.xp += xpGained;
-                gameState.dailyTranslations++;
-                
-                // Get definition and show results
-                await showResults(inputText, translated, toLang, xpGained);
-                
-                // Log translation
-                const fromLangName = gameState.unlockedLanguages.find(l => l.code === fromLang).name;
-                const toLangName = gameState.unlockedLanguages.find(l => l.code === toLang).name;
-                gameState.translationLog.push({
-                    date: new Date().toLocaleString(),
-                    from: fromLangName,
-                    to: toLangName,
-                    original: inputText,
-                    translated: translated
-                });
-                
-                checkBadges();
-                saveGameState();
-                updateUI();
-            }, 1200);
-        }
+// ----------------------------------------------------------------- WebGL globe
 
-        // Fallback translation dictionary for when API is unavailable
-        function getFallbackTranslation(text, toLang) {
-            const translations = {
-                // Greetings
-                'hello': { es: 'hola', fr: 'bonjour', de: 'hallo', it: 'ciao', pt: 'olá', zh: '你好', ja: 'こんにちは', ko: '안녕하세요', ar: 'مرحبا', ru: 'привет', hi: 'नमस्ते', tr: 'merhaba', nl: 'hallo', sv: 'hej', pl: 'cześć', vi: 'xin chào', th: 'สวัสดี', id: 'halo', uk: 'привіт', ro: 'salut', el: 'γεια', cs: 'ahoj', da: 'hej', fi: 'hei', hu: 'szia', he: 'שלום', no: 'hei', sk: 'ahoj', bg: 'здравей' },
-                'hi': { es: 'hola', fr: 'salut', de: 'hallo', it: 'ciao', pt: 'oi', zh: '嗨', ja: 'やあ', ko: '안녕', ar: 'مرحبا', ru: 'привет', hi: 'नमस्ते', tr: 'selam', nl: 'hoi', sv: 'hej', pl: 'cześć' },
-                'goodbye': { es: 'adiós', fr: 'au revoir', de: 'auf wiedersehen', it: 'arrivederci', pt: 'adeus', zh: '再见', ja: 'さようなら', ko: '안녕', ar: 'وداعا', ru: 'до свидания', hi: 'अलविदा', tr: 'güle güle', nl: 'tot ziens', sv: 'hejdå', pl: 'do widzenia' },
-                'bye': { es: 'adiós', fr: 'au revoir', de: 'tschüss', it: 'ciao', pt: 'tchau', zh: '拜拜', ja: 'バイバイ', ko: '잘가', ar: 'وداعا', ru: 'пока', hi: 'अलविदा', tr: 'güle güle', nl: 'doei', sv: 'hej då', pl: 'cześć' },
-                'thank you': { es: 'gracias', fr: 'merci', de: 'danke', it: 'grazie', pt: 'obrigado', zh: '谢谢', ja: 'ありがとう', ko: '감사합니다', ar: 'شكرا', ru: 'спасибо', hi: 'धन्यवाद', tr: 'teşekkür ederim', nl: 'dank je', sv: 'tack', pl: 'dziękuję' },
-                'thanks': { es: 'gracias', fr: 'merci', de: 'danke', it: 'grazie', pt: 'obrigado', zh: '谢谢', ja: 'ありがとう', ko: '고마워', ar: 'شكرا', ru: 'спасибо', hi: 'धन्यवाद', tr: 'teşekkürler', nl: 'bedankt', sv: 'tack', pl: 'dzięki' },
-                'yes': { es: 'sí', fr: 'oui', de: 'ja', it: 'sì', pt: 'sim', zh: '是', ja: 'はい', ko: '네', ar: 'نعم', ru: 'да', hi: 'हाँ', tr: 'evet', nl: 'ja', sv: 'ja', pl: 'tak' },
-                'no': { es: 'no', fr: 'non', de: 'nein', it: 'no', pt: 'não', zh: '不', ja: 'いいえ', ko: '아니요', ar: 'لا', ru: 'нет', hi: 'नहीं', tr: 'hayır', nl: 'nee', sv: 'nej', pl: 'nie' },
-                'please': { es: 'por favor', fr: 's\'il vous plaît', de: 'bitte', it: 'per favore', pt: 'por favor', zh: '请', ja: 'お願いします', ko: '제발', ar: 'من فضلك', ru: 'пожалуйста', hi: 'कृपया', tr: 'lütfen', nl: 'alsjeblieft', sv: 'snälla' },
-                'sorry': { es: 'lo siento', fr: 'désolé', de: 'entschuldigung', it: 'scusa', pt: 'desculpe', zh: '对不起', ja: 'ごめんなさい', ko: '미안해요', ar: 'آسف', ru: 'извини', hi: 'माफ़ करना', tr: 'özür dilerim', nl: 'sorry', sv: 'förlåt', pl: 'przepraszam' },
-                
-                // Time & common phrases  
-                'good morning': { es: 'buenos días', fr: 'bonjour', de: 'guten morgen', it: 'buongiorno', pt: 'bom dia', zh: '早上好', ja: 'おはよう', ko: '좋은 아침', ar: 'صباح الخير', ru: 'доброе утро', hi: 'सुप्रभात', tr: 'günaydın' },
-                'good night': { es: 'buenas noches', fr: 'bonne nuit', de: 'gute nacht', it: 'buona notte', pt: 'boa noite', zh: '晚安', ja: 'おやすみ', ko: '안녕히 주무세요', ar: 'تصبح على خير', ru: 'спокойной ночи', hi: 'शुभ रात्रि' },
-                'good afternoon': { es: 'buenas tardes', fr: 'bon après-midi', de: 'guten tag', it: 'buon pomeriggio', pt: 'boa tarde', zh: '下午好', ja: 'こんにちは', ko: '좋은 오후', ar: 'مساء الخير', ru: 'добрый день', hi: 'शुभ दोपहर', tr: 'iyi günler' },
-                'see you later': { es: 'hasta luego', fr: 'à plus tard', de: 'bis später', it: 'a dopo', pt: 'até logo', zh: '回头见', ja: 'また後で', ko: '나중에 봐요', ar: 'أراك لاحقا', ru: 'увидимся позже', hi: 'बाद में मिलते हैं' },
-                'see you': { es: 'nos vemos', fr: 'à bientôt', de: 'bis dann', it: 'ci vediamo', pt: 'até mais', zh: '再见', ja: 'またね', ko: '또 봐', ar: 'أراك', ru: 'увидимся', hi: 'मिलते हैं', tr: 'görüşürüz' },
-                'how are you': { es: '¿cómo estás?', fr: 'comment allez-vous?', de: 'wie geht es dir?', it: 'come stai?', pt: 'como vai?', zh: '你好吗?', ja: '元気ですか?', ko: '어떻게 지내세요?', ar: 'كيف حالك؟', ru: 'как дела?' },
-                'welcome': { es: 'bienvenido', fr: 'bienvenue', de: 'willkommen', it: 'benvenuto', pt: 'bem-vindo', zh: '欢迎', ja: 'ようこそ', ko: '환영합니다', ar: 'أهلا بك', ru: 'добро пожаловать', hi: 'स्वागत' },
-                'i love you': { es: 'te amo', fr: 'je t\'aime', de: 'ich liebe dich', it: 'ti amo', pt: 'eu te amo', zh: '我爱你', ja: '愛してる', ko: '사랑해', ar: 'أحبك', ru: 'я тебя люблю', hi: 'मैं तुमसे प्यार करता हूँ', tr: 'seni seviyorum' },
-                
-                // Questions  
-                'what': { es: 'qué', fr: 'quoi', de: 'was', it: 'cosa', pt: 'o que', zh: '什么', ja: '何', ko: '무엇', ar: 'ماذا', ru: 'что', hi: 'क्या', tr: 'ne', nl: 'wat', sv: 'vad', pl: 'co' },
-                'what are you doing': { es: 'qué estás haciendo', fr: 'que fais-tu', de: 'was machst du', it: 'cosa stai facendo', pt: 'o que você está fazendo', zh: '你在做什么', ja: '何してるの', ko: '뭐하고 있어', ar: 'ماذا تفعل', ru: 'что ты делаешь', hi: 'तुम क्या कर रहे हो', tr: 'ne yapıyorsun' },
-                'where': { es: 'dónde', fr: 'où', de: 'wo', it: 'dove', pt: 'onde', zh: '哪里', ja: 'どこ', ko: '어디', ar: 'أين', ru: 'где', hi: 'कहाँ', tr: 'nerede', nl: 'waar', sv: 'var', pl: 'gdzie' },
-                'when': { es: 'cuándo', fr: 'quand', de: 'wann', it: 'quando', pt: 'quando', zh: '什么时候', ja: 'いつ', ko: '언제', ar: 'متى', ru: 'когда', hi: 'कब', tr: 'ne zaman', nl: 'wanneer', sv: 'när', pl: 'kiedy' },
-                'why': { es: 'por qué', fr: 'pourquoi', de: 'warum', it: 'perché', pt: 'por que', zh: '为什么', ja: 'なぜ', ko: '왜', ar: 'لماذا', ru: 'почему', hi: 'क्यों', tr: 'neden', nl: 'waarom', sv: 'varför', pl: 'dlaczego' },
-                'how': { es: 'cómo', fr: 'comment', de: 'wie', it: 'come', pt: 'como', zh: '怎么', ja: 'どうやって', ko: '어떻게', ar: 'كيف', ru: 'как', hi: 'कैसे', tr: 'nasıl', nl: 'hoe', sv: 'hur', pl: 'jak' },
-                'who': { es: 'quién', fr: 'qui', de: 'wer', it: 'chi', pt: 'quem', zh: '谁', ja: '誰', ko: '누구', ar: 'من', ru: 'кто', hi: 'कौन', tr: 'kim', nl: 'wie', sv: 'vem', pl: 'kto' },
-                
-                // Family
-                'son': { es: 'hijo', fr: 'fils', de: 'sohn', it: 'figlio', pt: 'filho', zh: '儿子', ja: '息子', ko: '아들', ar: 'ابن', ru: 'сын', hi: 'बेटा', tr: 'oğul', nl: 'zoon', sv: 'son', pl: 'syn', vi: 'con trai', th: 'ลูกชาย', id: 'anak laki-laki' },
-                'daughter': { es: 'hija', fr: 'fille', de: 'tochter', it: 'figlia', pt: 'filha', zh: '女儿', ja: '娘', ko: '딸', ar: 'ابنة', ru: 'дочь', hi: 'बेटी', tr: 'kız', nl: 'dochter', sv: 'dotter', pl: 'córka', vi: 'con gái', th: 'ลูกสาว', id: 'anak perempuan' },
-                'mother': { es: 'madre', fr: 'mère', de: 'mutter', it: 'madre', pt: 'mãe', zh: '母亲', ja: '母', ko: '어머니', ar: 'أم', ru: 'мать', hi: 'माँ', tr: 'anne', nl: 'moeder', sv: 'mamma', pl: 'matka', vi: 'mẹ', th: 'แม่', id: 'ibu' },
-                'father': { es: 'padre', fr: 'père', de: 'vater', it: 'padre', pt: 'pai', zh: '父亲', ja: '父', ko: '아버지', ar: 'أب', ru: 'отец', hi: 'पिता', tr: 'baba', nl: 'vader', sv: 'pappa', pl: 'ojciec', vi: 'cha', th: 'พ่อ', id: 'ayah' },
-                'brother': { es: 'hermano', fr: 'frère', de: 'bruder', it: 'fratello', pt: 'irmão', zh: '兄弟', ja: '兄弟', ko: '형제', ar: 'أخ', ru: 'брат', hi: 'भाई', tr: 'erkek kardeş', nl: 'broer', sv: 'bror', pl: 'brat', vi: 'anh trai', th: 'พี่ชาย', id: 'saudara laki-laki' },
-                'sister': { es: 'hermana', fr: 'sœur', de: 'schwester', it: 'sorella', pt: 'irmã', zh: '姐妹', ja: '姉妹', ko: '자매', ar: 'أخت', ru: 'сестра', hi: 'बहन', tr: 'kız kardeş', nl: 'zus', sv: 'syster', pl: 'siostra', vi: 'chị gái', th: 'พี่สาว', id: 'saudara perempuan' },
-                'parent': { es: 'padre', fr: 'parent', de: 'elternteil', it: 'genitore', pt: 'pai', zh: '父母', ja: '親', ko: '부모', ar: 'والد', ru: 'родитель', hi: 'माता-पिता', tr: 'ebeveyn', nl: 'ouder', sv: 'förälder', pl: 'rodzic' },
-                'child': { es: 'niño', fr: 'enfant', de: 'kind', it: 'bambino', pt: 'criança', zh: '孩子', ja: '子供', ko: '아이', ar: 'طفل', ru: 'ребенок', hi: 'बच्चा', tr: 'çocuk', nl: 'kind', sv: 'barn', pl: 'dziecko' },
-                'baby': { es: 'bebé', fr: 'bébé', de: 'baby', it: 'bambino', pt: 'bebê', zh: '婴儿', ja: '赤ちゃん', ko: '아기', ar: 'طفل رضيع', ru: 'младенец', hi: 'शिशु', tr: 'bebek', nl: 'baby', sv: 'bebis', pl: 'niemowlę' },
-                
-                // Common nouns
-                'car': { es: 'coche', fr: 'voiture', de: 'auto', it: 'macchina', pt: 'carro', zh: '车', ja: '車', ko: '차', ar: 'سيارة', ru: 'машина', hi: 'कार', tr: 'araba', nl: 'auto', sv: 'bil', pl: 'samochód', vi: 'xe hơi', th: 'รถยนต์', id: 'mobil' },
-                'house': { es: 'casa', fr: 'maison', de: 'haus', it: 'casa', pt: 'casa', zh: '房子', ja: '家', ko: '집', ar: 'بيت', ru: 'дом', hi: 'घर', tr: 'ev', nl: 'huis', sv: 'hus', pl: 'dom' },
-                'food': { es: 'comida', fr: 'nourriture', de: 'essen', it: 'cibo', pt: 'comida', zh: '食物', ja: '食べ物', ko: '음식', ar: 'طعام', ru: 'еда', hi: 'भोजन', tr: 'yemek', nl: 'eten', sv: 'mat', pl: 'jedzenie' },
-                'water': { es: 'agua', fr: 'eau', de: 'wasser', it: 'acqua', pt: 'água', zh: '水', ja: '水', ko: '물', ar: 'ماء', ru: 'вода', hi: 'पानी', tr: 'su', nl: 'water', sv: 'vatten', pl: 'woda' },
-                'book': { es: 'libro', fr: 'livre', de: 'buch', it: 'libro', pt: 'livro', zh: '书', ja: '本', ko: '책', ar: 'كتاب', ru: 'книга', hi: 'किताब', tr: 'kitap', nl: 'boek', sv: 'bok', pl: 'książka' },
-                'phone': { es: 'teléfono', fr: 'téléphone', de: 'telefon', it: 'telefono', pt: 'telefone', zh: '电话', ja: '電話', ko: '전화', ar: 'هاتف', ru: 'телефон', hi: 'फ़ोन', tr: 'telefon', nl: 'telefoon', sv: 'telefon', pl: 'telefon' },
-                'computer': { es: 'computadora', fr: 'ordinateur', de: 'computer', it: 'computer', pt: 'computador', zh: '电脑', ja: 'コンピュータ', ko: '컴퓨터', ar: 'حاسوب', ru: 'компьютер', hi: 'कंप्यूटर', tr: 'bilgisayar', nl: 'computer', sv: 'dator', pl: 'komputer' },
-                'money': { es: 'dinero', fr: 'argent', de: 'geld', it: 'soldi', pt: 'dinheiro', zh: '钱', ja: 'お金', ko: '돈', ar: 'مال', ru: 'деньги', hi: 'पैसा', tr: 'para', nl: 'geld', sv: 'pengar', pl: 'pieniądze' },
-                
-                // Emotions & concepts  
-                'love': { es: 'amor', fr: 'amour', de: 'liebe', it: 'amore', pt: 'amor', zh: '爱', ja: '愛', ko: '사랑', ar: 'حب', ru: 'любовь', hi: 'प्यार', tr: 'aşk', nl: 'liefde', sv: 'kärlek', pl: 'miłość' },
-                'friend': { es: 'amigo', fr: 'ami', de: 'freund', it: 'amico', pt: 'amigo', zh: '朋友', ja: '友達', ko: '친구', ar: 'صديق', ru: 'друг', hi: 'दोस्त', tr: 'arkadaş', nl: 'vriend', sv: 'vän', pl: 'przyjaciel' },
-                'family': { es: 'familia', fr: 'famille', de: 'familie', it: 'famiglia', pt: 'família', zh: '家庭', ja: '家族', ko: '가족', ar: 'عائلة', ru: 'семья', hi: 'परिवार', tr: 'aile', nl: 'familie', sv: 'familj', pl: 'rodzina' },
-                'happy': { es: 'feliz', fr: 'heureux', de: 'glücklich', it: 'felice', pt: 'feliz', zh: '快乐', ja: '幸せ', ko: '행복한', ar: 'سعيد', ru: 'счастливый', hi: 'खुश', tr: 'mutlu', nl: 'gelukkig', sv: 'lycklig', pl: 'szczęśliwy' },
-                'sad': { es: 'triste', fr: 'triste', de: 'traurig', it: 'triste', pt: 'triste', zh: '悲伤', ja: '悲しい', ko: '슬픈', ar: 'حزين', ru: 'грустный', hi: 'दुखी', tr: 'üzgün', nl: 'verdrietig', sv: 'ledsen', pl: 'smutny' },
-                'world': { es: 'mundo', fr: 'monde', de: 'welt', it: 'mondo', pt: 'mundo', zh: '世界', ja: '世界', ko: '세계', ar: 'عالم', ru: 'мир', hi: 'दुनिया', tr: 'dünya', nl: 'wereld', sv: 'värld', pl: 'świat' },
-                'peace': { es: 'paz', fr: 'paix', de: 'frieden', it: 'pace', pt: 'paz', zh: '和平', ja: '平和', ko: '평화', ar: 'سلام', ru: 'мир', hi: 'शांति', tr: 'barış', nl: 'vrede', sv: 'fred', pl: 'pokój' },
-                'life': { es: 'vida', fr: 'vie', de: 'leben', it: 'vita', pt: 'vida', zh: '生活', ja: '人生', ko: '생활', ar: 'حياة', ru: 'жизнь', hi: 'जीवन', tr: 'hayat', nl: 'leven', sv: 'liv', pl: 'życie' },
-                'time': { es: 'tiempo', fr: 'temps', de: 'zeit', it: 'tempo', pt: 'tempo', zh: '时间', ja: '時間', ko: '시간', ar: 'وقت', ru: 'время', hi: 'समय', tr: 'zaman', nl: 'tijd', sv: 'tid', pl: 'czas' },
-                'day': { es: 'día', fr: 'jour', de: 'tag', it: 'giorno', pt: 'dia', zh: '天', ja: '日', ko: '날', ar: 'يوم', ru: 'день', hi: 'दिन', tr: 'gün', nl: 'dag', sv: 'dag', pl: 'dzień' },
-                'night': { es: 'noche', fr: 'nuit', de: 'nacht', it: 'notte', pt: 'noite', zh: '夜晚', ja: '夜', ko: '밤', ar: 'ليلة', ru: 'ночь', hi: 'रात', tr: 'gece', nl: 'nacht', sv: 'natt', pl: 'noc' },
-                
-                // Actions
-                'eat': { es: 'comer', fr: 'manger', de: 'essen', it: 'mangiare', pt: 'comer', zh: '吃', ja: '食べる', ko: '먹다', ar: 'يأكل', ru: 'есть', hi: 'खाना', tr: 'yemek', nl: 'eten', sv: 'äta', pl: 'jeść' },
-                'drink': { es: 'beber', fr: 'boire', de: 'trinken', it: 'bere', pt: 'beber', zh: '喝', ja: '飲む', ko: '마시다', ar: 'يشرب', ru: 'пить', hi: 'पीना', tr: 'içmek', nl: 'drinken', sv: 'dricka', pl: 'pić' },
-                'sleep': { es: 'dormir', fr: 'dormir', de: 'schlafen', it: 'dormire', pt: 'dormir', zh: '睡觉', ja: '寝る', ko: '자다', ar: 'ينام', ru: 'спать', hi: 'सोना', tr: 'uyumak', nl: 'slapen', sv: 'sova', pl: 'spać' },
-                'walk': { es: 'caminar', fr: 'marcher', de: 'gehen', it: 'camminare', pt: 'andar', zh: '走', ja: '歩く', ko: '걷다', ar: 'يمشي', ru: 'ходить', hi: 'चलना', tr: 'yürümek', nl: 'lopen', sv: 'gå', pl: 'chodzić' },
-                'run': { es: 'correr', fr: 'courir', de: 'laufen', it: 'correre', pt: 'correr', zh: '跑', ja: '走る', ko: '달리다', ar: 'يركض', ru: 'бегать', hi: 'दौड़ना', tr: 'koşmak', nl: 'rennen', sv: 'springa', pl: 'biegać' },
-                'work': { es: 'trabajar', fr: 'travailler', de: 'arbeiten', it: 'lavorare', pt: 'trabalhar', zh: '工作', ja: '働く', ko: '일하다', ar: 'يعمل', ru: 'работать', hi: 'काम करना', tr: 'çalışmak', nl: 'werken', sv: 'arbeta', pl: 'pracować' },
-                'play': { es: 'jugar', fr: 'jouer', de: 'spielen', it: 'giocare', pt: 'jogar', zh: '玩', ja: '遊ぶ', ko: '놀다', ar: 'يلعب', ru: 'играть', hi: 'खेलना', tr: 'oynamak', nl: 'spelen', sv: 'spela', pl: 'grać' },
-                'learn': { es: 'aprender', fr: 'apprendre', de: 'lernen', it: 'imparare', pt: 'aprender', zh: '学习', ja: '学ぶ', ko: '배우다', ar: 'يتعلم', ru: 'учиться', hi: 'सीखना', tr: 'öğrenmek', nl: 'leren', sv: 'lära', pl: 'uczyć się' },
-                'read': { es: 'leer', fr: 'lire', de: 'lesen', it: 'leggere', pt: 'ler', zh: '读', ja: '読む', ko: '읽다', ar: 'يقرأ', ru: 'читать', hi: 'पढ़ना', tr: 'okumak', nl: 'lezen', sv: 'läsa', pl: 'czytać' },
-                'write': { es: 'escribir', fr: 'écrire', de: 'schreiben', it: 'scrivere', pt: 'escrever', zh: '写', ja: '書く', ko: '쓰다', ar: 'يكتب', ru: 'писать', hi: 'लिखना', tr: 'yazmak', nl: 'schrijven', sv: 'skriva', pl: 'pisać' },
-                'help': { es: 'ayuda', fr: 'aide', de: 'hilfe', it: 'aiuto', pt: 'ajuda', zh: '帮助', ja: '助けて', ko: '도움', ar: 'مساعدة', ru: 'помощь', hi: 'मदद', tr: 'yardım', nl: 'hulp', sv: 'hjälp', pl: 'pomoc' },
-                'beautiful': { es: 'hermoso', fr: 'beau', de: 'schön', it: 'bello', pt: 'bonito', zh: '美丽', ja: '美しい', ko: '아름다운', ar: 'جميل', ru: 'красивый', hi: 'सुंदर', tr: 'güzel', nl: 'mooi', sv: 'vacker', pl: 'piękny' },
-                'good': { es: 'bueno', fr: 'bon', de: 'gut', it: 'buono', pt: 'bom', zh: '好', ja: '良い', ko: '좋은', ar: 'جيد', ru: 'хороший', hi: 'अच्छा', tr: 'iyi', nl: 'goed', sv: 'bra', pl: 'dobry' },
-                'bad': { es: 'malo', fr: 'mauvais', de: 'schlecht', it: 'cattivo', pt: 'ruim', zh: '坏', ja: '悪い', ko: '나쁜', ar: 'سيئ', ru: 'плохой', hi: 'बुरा', tr: 'kötü', nl: 'slecht', sv: 'dålig', pl: 'zły' }
-            };
-            
-            const lowerText = text.toLowerCase().trim();
-            
-            // Check for exact match
-            if (translations[lowerText] && translations[lowerText][toLang]) {
-                return translations[lowerText][toLang];
-            }
-            
-            // Check for partial matches (for phrases)
-            for (const [key, value] of Object.entries(translations)) {
-                if (lowerText.includes(key) && value[toLang]) {
-                    return value[toLang];
-                }
-            }
-            
-            // If no match found, return formatted text
-            const langName = gameState.unlockedLanguages.find(l => l.code === toLang)?.name || toLang;
-            return `${text} (in ${langName})`;
-        }
+function buildWebGL(THREE, world, { canvas, layout, onHover, onPick, onView, onReady, reducedMotion = false }) {
+  const small = Math.min(innerWidth, innerHeight) < 600;
+  const base = Object.assign(document.createElement('canvas'), { width: small ? 2048 : 4096, height: small ? 1024 : 2048 });
+  paintBase(base, world);
+  const hi = Object.assign(document.createElement('canvas'), { width: 2048, height: 1024 });
+  const hl = { to: new Set(), from: new Set(), hover: null, selected: null };
+  paintHighlight(hi, world, hl);
 
-        async function showResults(original, translated, toLang, xp) {
-            const resultSection = document.getElementById('result-section');
-            const definition = document.getElementById('definition');
-            const quote = document.getElementById('quote');
-            const xpGained = document.getElementById('xp-gained');
-            
-            // Get real definition from Free Dictionary API
-            const firstWord = original.trim().split(/\s+/)[0].toLowerCase();
-            let definitionText = 'A word that bridges cultures and connects people.';
-            
-            try {
-                const dictResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${firstWord}`);
-                if (dictResponse.ok) {
-                    const dictData = await dictResponse.json();
-                    if (dictData[0] && dictData[0].meanings && dictData[0].meanings[0]) {
-                        const meaning = dictData[0].meanings[0];
-                        if (meaning.definitions && meaning.definitions[0]) {
-                            definitionText = meaning.definitions[0].definition;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.log('Definition not found, using default');
-            }
-            
-            // Show definition (without sentence)
-            definition.textContent = `Definition: ${definitionText}`;
-            
-            // Generate witty quote
-            quote.textContent = `"${generateWittyQuote(original, translated)}"`;
-            
-            // Show XP
-            xpGained.textContent = `+${xp} XP Earned!`;
-            
-            resultSection.classList.add('active');
-            
-            // Store current translation for speech
-            window.currentTranslation = { text: translated, lang: toLang };
-        }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-        function generateWittyQuote(original, translated) {
-            const quotes = [
-                `I tried to say "${original}" in another language, but my tongue did a 360° spin and now I speak fluent "${translated}"!`,
-                `Why did "${original}" cross the language barrier? To become "${translated}" on the other side!`,
-                `"${original}" walked into a multilingual bar and came out as "${translated}". The bartender said, "That's the spirit!"`,
-                `They say "${original}" is universal, but "${translated}" is universally cooler with 43% more vowels!`,
-                `If "${original}" and "${translated}" had a rap battle, the dictionary would surrender.`,
-                `Breaking: Local word "${original}" discovers it has an alter ego named "${translated}". Identity crisis ensues.`,
-                `"${original}" isn't just a word, it's a lifestyle. "${translated}" is that lifestyle in pajamas.`,
-                `Scientists confirm: saying "${translated}" instead of "${original}" makes you 78% more internationally sophisticated!`
-            ];
-            return quotes[Math.floor(Math.random() * quotes.length)];
-        }
+  const scene = new THREE.Scene();
+  const FOV = 30;
+  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 200);
 
-        function speakTranslation() {
-            if (!window.currentTranslation) {
-                alert('Please translate text first!');
-                return;
-            }
-            
-            const { text, lang } = window.currentTranslation;
-            
-            if ('speechSynthesis' in window) {
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = lang;
-                
-                // Get available voices
-                const voices = window.speechSynthesis.getVoices();
-                const voice = voices.find(v => v.lang.startsWith(lang));
-                
-                if (voice) {
-                    utterance.voice = voice;
-                }
-                
-                utterance.onerror = (event) => {
-                    if (event.error === 'language-unavailable' || !voice) {
-                        const langName = gameState.unlockedLanguages.find(l => l.code === lang)?.name || 'this language';
-                        alert(`Voice not available for ${langName}, but the translation is correct! You can copy the text: "${text}"`);
-                    } else {
-                        alert('Speech synthesis error. Your translation is correct, but audio playback is unavailable.');
-                    }
-                };
-                
-                try {
-                    window.speechSynthesis.speak(utterance);
-                } catch (error) {
-                    const langName = gameState.unlockedLanguages.find(l => l.code === lang)?.name || 'this language';
-                    alert(`Voice not available for ${langName}, but the translation is correct! "${text}"`);
-                }
-            } else {
-                alert('Text-to-speech not supported in your browser. Your translation is: "' + text + '"');
-            }
-        }
+  const aniso = renderer.capabilities.getMaxAnisotropy();
+  const mapTex = new THREE.CanvasTexture(base);
+  mapTex.colorSpace = THREE.SRGBColorSpace; mapTex.anisotropy = aniso;
+  const hiTex = new THREE.CanvasTexture(hi);
+  hiTex.colorSpace = THREE.SRGBColorSpace; hiTex.anisotropy = aniso;
 
-        // Load voices when available
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
-        }
-        
-        let currentTranslation = '';
-        window.currentTranslation = null;
+  const globe = new THREE.Group();
+  scene.add(globe);
+  const body = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 96, 96),
+    new THREE.MeshStandardMaterial({ map: mapTex, emissiveMap: hiTex, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.88, metalness: 0 }),
+  );
+  globe.add(body);
 
-        // Settings
-        function openSettings() {
-            document.getElementById('settings-modal').classList.add('active');
-            document.getElementById('settings-username').value = gameState.profile.name;
-            populateAvatarGrid('settings-avatar-grid', true);
-            
-            // Pre-select current avatar
-            setTimeout(() => {
-                const avatars = document.querySelectorAll('#settings-avatar-grid .avatar-option');
-                avatars.forEach(av => {
-                    if (av.textContent === gameState.profile.avatar) {
-                        av.classList.add('selected');
-                    }
-                });
-            }, 100);
-        }
+  // atmosphere: bright just outside the limb, fading out
+  const atmo = new THREE.Mesh(
+    new THREE.SphereGeometry(1.14, 64, 64),
+    new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+      fragmentShader: 'varying vec3 vN; void main(){ float i = pow(max(0.0, 0.62 - dot(vN, vec3(0.0,0.0,1.0))), 4.0); gl_FragColor = vec4(vec3(0.58,0.7,0.88) * i * 0.55, i * 0.55); }',
+    }),
+  );
+  scene.add(atmo);
 
-        function closeSettings() {
-            document.getElementById('settings-modal').classList.remove('active');
-        }
+  scene.add(new THREE.HemisphereLight(0x9fb4d6, 0x0a0e16, 1.5));
+  const sun = new THREE.DirectionalLight(0xfff4e2, 2.6);
+  sun.position.set(-2.4, 1.7, 3.2);
+  scene.add(sun);
+  const rim = new THREE.DirectionalLight(0x6f8fc4, 0.9);
+  rim.position.set(3, -1, -2);
+  scene.add(rim);
 
-        function updateProfile() {
-            const newName = document.getElementById('settings-username').value.trim();
-            if (newName) {
-                gameState.profile.name = newName;
-            }
-            if (selectedAvatar) {
-                gameState.profile.avatar = selectedAvatar;
-            }
-            saveGameState();
-            updateUI();
-            closeSettings();
-        }
+  // stars
+  const starGeo = new THREE.BufferGeometry();
+  const sp = new Float32Array(1100 * 3);
+  for (let i = 0; i < 1100; i++) {
+    const u = Math.random() * 2 - 1; const t = Math.random() * TAU; const r = 28 + Math.random() * 30; const s = Math.sqrt(1 - u * u);
+    sp.set([r * s * Math.cos(t), r * u, r * s * Math.sin(t)], i * 3);
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+  scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xcfd8e8, size: 0.09, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false })));
 
-        // Initialize on load
-        window.addEventListener('load', () => {
-            loadGameState();
-        });
+  // markers (from = pale ring, to = amber dot)
+  const dot = (color, r) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 16), new THREE.MeshBasicMaterial({ color })); m.visible = false; globe.add(m); return m; };
+  const toDot = dot(0xffb020, 0.016);
+  const fromDot = dot(0xe6edf8, 0.011);
+  const place = (m, c) => { if (!c) { m.visible = false; return; } m.position.copy(toVec(THREE, c.lat, c.lon, 1.004)); m.visible = true; };
 
+  // ---- view state
+  let W = 1; let H = 1; let L = { cx: 0, cy: 0, radius: 200 };
+  const rot = { x: 0.45, y: -Math.PI / 2 - 8 * D2R };
+  const vel = { x: 0, y: 0 };
+  let zoom = 1; let zoomT = 1;
+  let fly = null; let dirty = true; let idleSince = performance.now(); let reduced = reducedMotion;
+  let arcState = null; let lastView = 0; let destroyed = false;
 
+  function setViewOffset() {
+    camera.aspect = W / H;
+    camera.setViewOffset(W, H, -(L.cx - W / 2), -(L.cy - H / 2), W, H);
+    const rpx = Math.max(40, L.radius * zoom);
+    const t = Math.tan((FOV * D2R) / 2);
+    camera.position.z = Math.sqrt(1 + (H / (2 * rpx * t)) ** 2);
+    camera.updateProjectionMatrix();
+  }
+
+  function resize() {
+    W = Math.max(1, canvas.clientWidth || innerWidth); H = Math.max(1, canvas.clientHeight || innerHeight);
+    renderer.setSize(W, H, false);
+    L = layout(W, H);
+    setViewOffset();
+    dirty = true;
+  }
+
+  const raycaster = new THREE.Raycaster();
+  function pick(clientX, clientY) {
+    const r = canvas.getBoundingClientRect();
+    raycaster.setFromCamera({ x: ((clientX - r.left) / r.width) * 2 - 1, y: -(((clientY - r.top) / r.height) * 2 - 1) }, camera);
+    const hit = raycaster.intersectObject(body, false)[0];
+    if (!hit) return null;
+    const p = body.worldToLocal(hit.point.clone());
+    const lat = Math.asin(clamp(p.y, -1, 1)) / D2R; const lon = Math.atan2(-p.z, p.x) / D2R;
+    const c = countryAt(world, lon, lat);
+    return { lat, lon, country: c?.name ?? null, lang: c?.lang ?? null };
+  }
+
+  const centerLatLon = () => ({ lat: rot.x / D2R, lon: ((((-Math.PI / 2 - rot.y) / D2R) + 540) % 360) - 180 });
+  const centerCountry = () => { const { lat, lon } = centerLatLon(); const c = countryAt(world, lon, lat); return { lat, lon, country: c?.name ?? null, lang: c?.lang ?? null }; };
+
+  function setHover(name) {
+    if (hl.hover === name) return;
+    hl.hover = name; paintHighlight(hi, world, hl); hiTex.needsUpdate = true; dirty = true;
+  }
+
+  function flyToLatLon(lat, lon, { zoom: z = 1.12, duration } = {}) {
+    const tx = clamp(lat * D2R, -1.2, 1.2);
+    let ty = -Math.PI / 2 - lon * D2R;
+    ty = rot.y + ((((ty - rot.y) % TAU) + 3 * Math.PI) % TAU) - Math.PI; // shortest way round
+    vel.x = vel.y = 0;
+    zoomT = z;
+    if (reduced) { rot.x = tx; rot.y = ty; fly = null; dirty = true; return; }
+    const dist = Math.hypot(tx - rot.x, ty - rot.y);
+    fly = { t0: performance.now(), dur: duration ?? clamp(500 + dist * 520, 600, 1500), fx: rot.x, fy: rot.y, tx, ty };
+  }
+
+  function setArcProgress(a, p) {
+    a.mesh.geometry.setDrawRange(0, Math.floor(p * a.segs) * a.radial * 6);
+    const pt = a.curve.getPoint(clamp(p, 0, 1));
+    a.head.position.copy(pt);
+    a.head.visible = p > 0 && p < 1;
+  }
+
+  function clearArc() {
+    if (!arcState) return;
+    globe.remove(arcState.mesh, arcState.head);
+    arcState.mesh.geometry.dispose(); arcState.mesh.material.dispose(); arcState.head.geometry.dispose(); arcState.head.material.dispose();
+    arcState = null;
+  }
+
+  function arc(fromCode, toCode) {
+    clearArc();
+    const a = world.byName.get(BY_CODE[fromCode]?.home); const b = world.byName.get(BY_CODE[toCode]?.home);
+    if (!a || !b || a === b) return;
+    const p0 = toVec(THREE, a.lat, a.lon).normalize(); const p1 = toVec(THREE, b.lat, b.lon).normalize();
+    const ang = p0.angleTo(p1);
+    const pts = [];
+    const n = 64;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const v = new THREE.Vector3().copy(p0).lerp(p1, t).normalize();
+      pts.push(v.multiplyScalar(1.004 + Math.sin(Math.PI * t) * (0.02 + ang * 0.055)));
+    }
+    const curve = new THREE.CatmullRomCurve3(pts);
+    const segs = 96; const radial = 6;
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffb020, transparent: true, opacity: 0.95 });
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, segs, 0.0036, radial, false), mat);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.013, 12, 12), new THREE.MeshBasicMaterial({ color: 0xfff1cf }));
+    globe.add(mesh, head);
+    arcState = { mesh, head, curve, segs, radial, t0: performance.now(), dur: 1100 + ang * 500, done: reduced };
+    setArcProgress(arcState, reduced ? 1 : 0);
+    arcState.head.visible = false;
+    dirty = true;
+  }
+
+  // ---- pointer input
+  const pointers = new Map();
+  let drag = null; let pinch = 0;
+  canvas.style.touchAction = 'none';
+
+  canvas.addEventListener('pointerdown', (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) { drag = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 }; fly = null; vel.x = vel.y = 0; }
+    if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); drag = null; }
+    idleSince = performance.now();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const prev = pointers.get(e.pointerId);
+    if (prev) { prev.x = e.clientX; prev.y = e.clientY; }
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch) zoomT = clamp(zoomT * (d / pinch), 0.8, 2.4);
+      pinch = d; dirty = true; return;
+    }
+    if (drag && pointers.size === 1) {
+      const dx = e.clientX - drag.x; const dy = e.clientY - drag.y;
+      drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+      if (drag.moved > 6) {
+        const k = 1 / Math.max(60, L.radius * zoom);
+        rot.y += dx * k; rot.x = clamp(rot.x + dy * k, -1.3, 1.3);
+        vel.y = dx * k; vel.x = dy * k;
+        setHover(null); onHover?.(null);
+        dirty = true;
+      }
+      return;
+    }
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+      const h = pick(e.clientX, e.clientY);
+      setHover(h?.country ?? null);
+      canvas.style.cursor = h?.lang ? 'pointer' : h ? 'default' : 'grab';
+      onHover?.(h, e.clientX, e.clientY);
+    }
+  });
+
+  const end = (e) => {
+    const wasDrag = drag;
+    pointers.delete(e.pointerId);
+    pinch = 0;
+    if (wasDrag && pointers.size === 0) {
+      if (wasDrag.moved <= 6 && performance.now() - wasDrag.t < 600) {
+        const h = pick(e.clientX, e.clientY);
+        if (h) { onPick?.(h, e.clientX, e.clientY); if (e.pointerType === 'touch') onHover?.(h, e.clientX, e.clientY); }
+      }
+      drag = null; idleSince = performance.now();
+    }
+  };
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { setHover(null); onHover?.(null); } });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomT = clamp(zoomT * Math.exp(-e.deltaY * 0.0014), 0.8, 2.4);
+    idleSince = performance.now(); dirty = true;
+  }, { passive: false });
+
+  canvas.addEventListener('keydown', (e) => {
+    const step = 0.14 / zoom;
+    const k = e.key;
+    if (k === 'ArrowLeft') rot.y += step; else if (k === 'ArrowRight') rot.y -= step;
+    else if (k === 'ArrowUp') rot.x = clamp(rot.x + step, -1.3, 1.3); else if (k === 'ArrowDown') rot.x = clamp(rot.x - step, -1.3, 1.3);
+    else if (k === '+' || k === '=') zoomT = clamp(zoomT * 1.15, 0.8, 2.4); else if (k === '-' || k === '_') zoomT = clamp(zoomT / 1.15, 0.8, 2.4);
+    else if (k === 'Enter' || k === ' ') { const c = centerCountry(); onPick?.(c); onHover?.(c, L.cx, L.cy); e.preventDefault(); return; }
+    else return;
+    e.preventDefault(); fly = null; idleSince = performance.now(); dirty = true;
+    const c = centerCountry(); setHover(c.country); onHover?.(c, L.cx, L.cy);
+  });
+
+  // ---- loop
+  let raf = 0; let last = performance.now();
+  function frame(now) {
+    if (destroyed) return;
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(50, now - last); last = now;
+    if (document.hidden) return;
+
+    if (fly) {
+      const p = clamp((now - fly.t0) / fly.dur, 0, 1); const e = ease(p);
+      rot.x = fly.fx + (fly.tx - fly.fx) * e; rot.y = fly.fy + (fly.ty - fly.fy) * e;
+      if (p >= 1) { fly = null; idleSince = now; }
+      dirty = true;
+    } else if (!drag && pointers.size === 0) {
+      if (Math.abs(vel.x) > 1e-5 || Math.abs(vel.y) > 1e-5) {
+        rot.y += vel.y; rot.x = clamp(rot.x + vel.x, -1.3, 1.3);
+        vel.x *= 0.93; vel.y *= 0.93; dirty = true;
+      } else if (!reduced && now - idleSince > 4500) {
+        rot.y -= dt * 0.00007; dirty = true;
+      }
+    }
+    if (Math.abs(zoomT - zoom) > 0.0008) { zoom += (zoomT - zoom) * Math.min(1, dt * 0.012); setViewOffset(); dirty = true; }
+
+    if (arcState) {
+      const a = arcState; const age = now - a.t0;
+      if (!a.done) { const p = clamp(age / a.dur, 0, 1); setArcProgress(a, ease(p)); if (p >= 1) { a.done = true; a.head.visible = false; } dirty = true; }
+      const fade = clamp((age - a.dur - 2400) / 1200, 0, 1);
+      if (fade > 0) { a.mesh.material.opacity = 0.95 * (1 - fade); dirty = true; if (fade >= 1) clearArc(); }
+    }
+
+    if (dirty) {
+      globe.rotation.set(rot.x, rot.y, 0);
+      renderer.render(scene, camera);
+      dirty = false;
+      if (onView && now - lastView > 120) { lastView = now; const c = centerLatLon(); onView(c.lat, c.lon); }
+    }
+  }
+
+  new ResizeObserver(resize).observe(canvas);
+  document.addEventListener('visibilitychange', () => { dirty = true; });
+  resize();
+  raf = requestAnimationFrame(frame);
+  requestAnimationFrame(() => onReady?.());
+
+  return {
+    kind: 'webgl',
+    debugBase: base,
+    locate: (name) => world.byName.get(name) ?? null,
+    resize,
+    centerCountry,
+    setReducedMotion(v) { reduced = v; },
+    setState({ from, to, selected }) {
+      hl.from = names(from); hl.to = names(to); hl.selected = selected ?? BY_CODE[to]?.home ?? null;
+      paintHighlight(hi, world, hl); hiTex.needsUpdate = true;
+      place(toDot, world.byName.get(BY_CODE[to]?.home)); place(fromDot, from ? world.byName.get(BY_CODE[from]?.home) : null);
+      dirty = true;
+    },
+    flyToLanguage(code, o) { const c = world.byName.get(BY_CODE[code]?.home); if (c) flyToLatLon(c.lat, c.lon, o); },
+    flyToCountry(name, o) { const c = world.byName.get(name); if (c) flyToLatLon(c.lat, c.lon, o); },
+    arc,
+    nudge() { idleSince = performance.now(); },
+    dispose() { destroyed = true; cancelAnimationFrame(raf); renderer.dispose(); },
+  };
+}
+
+// ----------------------------------------------------------------- flat fallback
+
+function buildFlat(world, { canvas, layout, onHover, onPick, onReady, onView }) {
+  const base = Object.assign(document.createElement('canvas'), { width: 2048, height: 1024 });
+  paintBase(base, world);
+  const hi = Object.assign(document.createElement('canvas'), { width: 2048, height: 1024 });
+  const hl = { to: new Set(), from: new Set(), hover: null, selected: null };
+  const ctx = canvas.getContext('2d');
+  let box = { x: 0, y: 0, w: 1, h: 1 }; let focus = null; let dpr = 1;
+  canvas.dataset.fallback = 'flat';
+
+  function draw() {
+    paintHighlight(hi, world, hl);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(base, box.x, box.y, box.w, box.h);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(hi, box.x, box.y, box.w, box.h);
+    ctx.globalCompositeOperation = 'source-over';
+    if (focus) {
+      const x = box.x + ((focus.lon + 180) / 360) * box.w; const y = box.y + ((90 - focus.lat) / 180) * box.h;
+      ctx.strokeStyle = '#ffb020'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.stroke();
+      ctx.fillStyle = '#ffb020'; ctx.beginPath(); ctx.arc(x, y, 3.2, 0, TAU); ctx.fill();
+    }
+  }
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const W = canvas.clientWidth || innerWidth; const H = canvas.clientHeight || innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const L = layout(W, H);
+    const w = Math.min(L.radius * 3.4, W - 24); const h = w / 2;
+    box = { x: L.cx - w / 2, y: L.cy - h / 2, w, h };
+    draw();
+  }
+
+  const at = (cx, cy) => {
+    const r = canvas.getBoundingClientRect();
+    const px = cx - r.left; const py = cy - r.top;
+    if (px < box.x || py < box.y || px > box.x + box.w || py > box.y + box.h) return null;
+    const lon = ((px - box.x) / box.w) * 360 - 180; const lat = 90 - ((py - box.y) / box.h) * 180;
+    const c = countryAt(world, lon, lat);
+    return { lat, lon, country: c?.name ?? null, lang: c?.lang ?? null };
+  };
+
+  canvas.addEventListener('pointermove', (e) => {
+    const h = at(e.clientX, e.clientY);
+    if ((h?.country ?? null) !== hl.hover) { hl.hover = h?.country ?? null; draw(); }
+    canvas.style.cursor = h?.lang ? 'pointer' : 'default';
+    onHover?.(h, e.clientX, e.clientY);
+  });
+  canvas.addEventListener('pointerleave', () => { hl.hover = null; draw(); onHover?.(null); });
+  canvas.addEventListener('click', (e) => { const h = at(e.clientX, e.clientY); if (h) { onPick?.(h, e.clientX, e.clientY); if (e.pointerType === 'touch') onHover?.(h, e.clientX, e.clientY); } });
+
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+  requestAnimationFrame(() => onReady?.());
+
+  return {
+    kind: 'flat',
+    locate: (name) => world.byName.get(name) ?? null,
+    resize,
+    centerCountry: () => ({ lat: 0, lon: 0, country: null, lang: null }),
+    setReducedMotion() {},
+    setState({ from, to, selected }) {
+      hl.from = names(from); hl.to = names(to); hl.selected = selected ?? BY_CODE[to]?.home ?? null;
+      focus = world.byName.get(BY_CODE[to]?.home) ?? null;
+      draw();
+    },
+    flyToLanguage(code) { focus = world.byName.get(BY_CODE[code]?.home) ?? focus; draw(); onView?.(focus?.lat ?? 0, focus?.lon ?? 0); },
+    flyToCountry(name) { focus = world.byName.get(name) ?? focus; draw(); },
+    arc() {},
+    nudge() {},
+    dispose() {},
+  };
+}
