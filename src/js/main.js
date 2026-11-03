@@ -60,7 +60,9 @@ function toast({ stamp, title, sub, plain = false }) {
   if (sub) { const s = document.createElement('div'); s.className = 'toast-sub'; s.textContent = sub; body.append(s); }
   el.append(body);
   host.append(el);
-  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 200); }, plain ? 2600 : 3800);
+  const small = matchMedia('(max-width: 900px)').matches;
+  const life = small ? (plain ? 1700 : 2300) : (plain ? 2400 : 3200);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 200); }, life);
 }
 
 const fmtCoord = (lat, lon) => `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
@@ -116,7 +118,7 @@ function renderChips() {
   if (src === to) src = to === 'en' ? 'es' : 'en';
   const items = phrasebook.list(src, to);
   const list = $('chips'); list.replaceChildren();
-  const visible = ui.showAll ? items : items.slice(0, 8);
+  const visible = ui.showAll ? items : items.slice(0, 6);
   for (const it of visible) {
     const li = document.createElement('li');
     const b = document.createElement('button');
@@ -128,7 +130,7 @@ function renderChips() {
     b.append(a, t);
     li.append(b); list.append(li);
   }
-  if (items.length > 8) {
+  if (items.length > 6) {
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'chip-more'; b.id = 'chip-more';
@@ -347,6 +349,7 @@ function announceRewards(rec, rankBefore, to) {
 function renderHud() {
   const s = streakInfo(state);
   $('hud-streak').textContent = s.count;
+  $('hud-unit').textContent = s.count === 1 ? 'day' : 'days';
   $('hud-xp').textContent = state.xp.toLocaleString();
   $('hud-rank').textContent = rankFor(state.xp).name;
   $('open-passport').classList.toggle('has-streak', s.count > 0);
