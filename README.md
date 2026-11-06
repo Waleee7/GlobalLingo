@@ -108,4 +108,4 @@ test/core.test.js
 
 ---
 
-Built by [Akinwale Dare](https://josh-dare.vercel.app)
+Built by [Akinwale Dare](https://dare-os.vercel.app)
