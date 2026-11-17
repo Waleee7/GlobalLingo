@@ -77,6 +77,8 @@ node --test test/core.test.js
 
 They cover the tier order, quota and offline fallbacks, MyMemory parsing and chunking, the cache, language detection, phrasebook integrity and the rewards/streak maths.
 
+Last run on 2026-11-17: **25 of 25 tests passed** (`node --test`, about 70 ms).
+
 ## Tech stack
 
 | Piece | What |
@@ -105,6 +107,21 @@ test/core.test.js
 - Chrome's on-device Translator is desktop Chrome only, and supports fewer languages than the app lists. Other browsers use MyMemory or the phrasebook.
 - MyMemory's free tier is small and its quality varies by language pair. That's why the engine stamp exists.
 - "Listen" needs a voice for that language installed on your device.
+
+## Status
+
+Live at [global-lingo.vercel.app](https://global-lingo.vercel.app). Vercel deploys `main` to production.
+
+## Roadmap
+
+- More hand-checked phrasebook entries, so more of the app works offline.
+- Show which listed languages Chrome's on-device translator actually supports on the current device.
+
+## Credits
+
+- Globe: [three.js](https://threejs.org) (MIT) and [world-atlas](https://github.com/topojson/world-atlas) country shapes (ISC), from Natural Earth (public domain).
+- Translation: Chrome's built-in Translator and Language Detector APIs, and the free [MyMemory](https://mymemory.translated.net) API.
+- Fonts: Instrument Serif and JetBrains Mono (SIL Open Font License), self-hosted.
 
 ---
 
